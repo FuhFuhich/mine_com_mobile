@@ -51,36 +51,75 @@ class _LoginScreenState extends State<LoginScreen> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         const SizedBox(height: 40),
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF00E676).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.storage,
+                            size: 48,
+                            color: Color(0xFF00E676),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
                         const Text(
-                          'Вход в аккаунт',
+                          'Mine Manager',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 22),
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 28,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Управление Minecraft серверами',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Color(0xFFBBBBBB),
+                            fontSize: 14,
+                          ),
                         ),
                         const SizedBox(height: 32),
+                        const Text(
+                          'Вход в аккаунт',
+                          textAlign: TextAlign.left,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
                         TextFormField(
                           controller: _emailController,
                           autofillHints: const [AutofillHints.email],
                           keyboardType: TextInputType.emailAddress,
                           style: const TextStyle(color: Colors.white),
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
                             labelText: 'Email',
-                            prefixIcon:
-                                Icon(Icons.alternate_email, color: Color(0xFFBBBBBB)),
+                            hintText: 'user@example.com',
+                            prefixIcon: const Icon(Icons.email_outlined,
+                                color: Color(0xFF00E676)),
                             filled: true,
-                            fillColor: Color(0xFF222222),
-                            border: OutlineInputBorder(),
-                            labelStyle: TextStyle(color: Color(0xFFBBBBBB)),
-                          ),/*
-                          validator: (v) {
-                            if (v == null || v.isEmpty) return 'Введите email';
-                            if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(v)) {
-                              return 'Некорректный email';
-                            }
-                            return null;
-                          },*/
+                            fillColor: const Color(0xFF222222),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide:
+                                  const BorderSide(color: Color(0xFF404040)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide:
+                                  const BorderSide(color: Color(0xFF404040)),
+                            ),
+                            labelStyle:
+                                const TextStyle(color: Color(0xFFBBBBBB)),
+                            hintStyle:
+                                const TextStyle(color: Color(0xFF666666)),
+                          ),
                         ),
                         const SizedBox(height: 16),
                         TextFormField(
@@ -89,24 +128,32 @@ class _LoginScreenState extends State<LoginScreen> {
                           style: const TextStyle(color: Colors.white),
                           decoration: InputDecoration(
                             labelText: 'Пароль',
-                            prefixIcon:
-                                const Icon(Icons.key, color: Color(0xFFBBBBBB)),
+                            prefixIcon: const Icon(Icons.lock_outlined,
+                                color: Color(0xFF00E676)),
                             suffixIcon: IconButton(
                               onPressed: _toggleObscure,
                               icon: Icon(
                                 _obscure
-                                    ? Icons.remove_red_eye_outlined
-                                    : Icons.remove_red_eye,
-                                color: const Color(0xFFBBBBBB),
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined,
+                                color: const Color(0xFF00E676),
                               ),
                             ),
                             filled: true,
                             fillColor: const Color(0xFF222222),
-                            border: const OutlineInputBorder(),
-                            labelStyle: const TextStyle(color: Color(0xFFBBBBBB)),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide:
+                                  const BorderSide(color: Color(0xFF404040)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide:
+                                  const BorderSide(color: Color(0xFF404040)),
+                            ),
+                            labelStyle:
+                                const TextStyle(color: Color(0xFFBBBBBB)),
                           ),
-                          //validator: (v) =>
-                          //    v == null || v.length < 6 ? 'Минимум 6 символов' : null,
                         ),
                         const SizedBox(height: 12),
                         Row(
@@ -116,9 +163,15 @@ class _LoginScreenState extends State<LoginScreen> {
                               onChanged: (val) =>
                                   setState(() => _rememberMe = val ?? false),
                               activeColor: const Color(0xFF00E676),
+                              fillColor:
+                                  const MaterialStatePropertyAll<Color>(
+                                Color(0xFF00E676),
+                              ),
                             ),
-                            const Text('Запомнить меня',
-                                style: TextStyle(color: Color(0xFFBBBBBB))),
+                            const Text(
+                              'Запомнить меня',
+                              style: TextStyle(color: Color(0xFFBBBBBB)),
+                            ),
                           ],
                         ),
                         const SizedBox(height: 24),
@@ -126,19 +179,30 @@ class _LoginScreenState extends State<LoginScreen> {
                           onPressed: _onLoginPressed,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF00E676),
-                            minimumSize: const Size(double.infinity, 48),
+                            minimumSize: const Size(double.infinity, 50),
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12)),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                           ),
-                          child: const Text('Войти',
-                              style:
-                                  TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                          child: const Text(
+                            'Войти',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
                         const SizedBox(height: 16),
                         TextButton(
                           onPressed: _goToRegister,
-                          child: const Text('Нет аккаунта? Зарегистрироваться',
-                              style: TextStyle(color: Color(0xFFBBBBBB))),
+                          child: const Text(
+                            'Нет аккаунта? Зарегистрироваться',
+                            style: TextStyle(
+                              color: Color(0xFF00E676),
+                              fontSize: 14,
+                            ),
+                          ),
                         ),
                       ],
                     ),

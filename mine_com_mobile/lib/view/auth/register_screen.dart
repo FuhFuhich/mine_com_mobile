@@ -40,7 +40,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       body: SafeArea(
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onTap: () => FocusScope.of(context).unfocus(), // снимает фокус при тапе
+          onTap: () => FocusScope.of(context).unfocus(),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Center(

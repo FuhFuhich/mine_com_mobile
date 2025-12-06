@@ -46,7 +46,6 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // СТАТУС КАРТОЧКА
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -94,7 +93,6 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
             ),
             const SizedBox(height: 20),
 
-            // ИНФОРМАЦИЯ О СЕРВЕРЕ
             _buildInfoSection(
               title: 'Информация о сервере',
               items: [
@@ -107,11 +105,9 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
             ),
             const SizedBox(height: 20),
 
-            // ТЕКУЩИЕ МЕТРИКИ
             _buildMetricsPreview(),
             const SizedBox(height: 20),
 
-            // КНОПКИ УПРАВЛЕНИЯ
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -137,7 +133,6 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
             ),
             const SizedBox(height: 20),
 
-            // КНОПКИ НАВИГАЦИИ
             ElevatedButton.icon(
               onPressed: () {
                 Navigator.of(context).push(

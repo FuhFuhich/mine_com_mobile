@@ -21,8 +21,8 @@ class ProfileFragment extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               const Text(
-                'Имя пользователя', // здесь будет загрузка имени
-                style: const TextStyle(
+                'Имя пользователя',
+                style: TextStyle(
                   color: Colors.white,
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
@@ -30,8 +30,8 @@ class ProfileFragment extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               const Text(
-                'email@example.com', // здесь будет вывод почты
-                style: const TextStyle(color: Color(0xFFBBBBBB)),
+                'email@example.com',
+                style: TextStyle(color: Color(0xFFBBBBBB)),
               ),
               const SizedBox(height: 32),
               Container(
@@ -48,9 +48,7 @@ class ProfileFragment extends StatelessWidget {
                   ),
                   subtitle: const Text('Статистика, серверы, активность',
                       style: TextStyle(color: Color(0xFFBBBBBB))),
-                  onTap: () {
-                    // здесь переход к расширенной информации профиля
-                  },
+                  onTap: () {},
                 ),
               ),
               const SizedBox(height: 20),
@@ -64,9 +62,7 @@ class ProfileFragment extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: ElevatedButton(
-                  onPressed: () {
-                    // здесь будет выход из аккаунта
-                  },
+                  onPressed: () {},
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.transparent,
                     shadowColor: Colors.transparent,

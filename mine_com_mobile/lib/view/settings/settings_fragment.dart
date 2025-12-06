@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../provider/settings_provider.dart';
 
-class SettingsFragment extends StatefulWidget {
+class SettingsFragment extends ConsumerWidget {
   const SettingsFragment({super.key});
 
   @override
-  State<SettingsFragment> createState() => _SettingsFragmentState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final notificationsEnabled = ref.watch(notificationsProvider);
+    final darkTheme = ref.watch(darkThemeProvider);
 
-class _SettingsFragmentState extends State<SettingsFragment> {
-  bool notificationsEnabled = true;
-  bool darkTheme = true;
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF141414),
       appBar: AppBar(
@@ -30,8 +27,7 @@ class _SettingsFragmentState extends State<SettingsFragment> {
                 style: TextStyle(color: Color(0xFFBBBBBB))),
             value: notificationsEnabled,
             onChanged: (val) {
-              setState(() => notificationsEnabled = val);
-              // здесь будет включение отключение уведомлений
+              ref.read(notificationsProvider.notifier).state = val;
             },
           ),
           const Divider(color: Color(0xFF333333)),
@@ -42,17 +38,14 @@ class _SettingsFragmentState extends State<SettingsFragment> {
                 style: TextStyle(color: Color(0xFFBBBBBB))),
             value: darkTheme,
             onChanged: (val) {
-              setState(() => darkTheme = val);
-              // здесь будет смена темы
+              ref.read(darkThemeProvider.notifier).state = val;
             },
           ),
           const Divider(color: Color(0xFF333333)),
           ListTile(
             leading: const Icon(Icons.logout, color: Color(0xFF00E676)),
             title: const Text('Выйти из аккаунта', style: TextStyle(color: Colors.white)),
-            onTap: () {
-              // также здесь будет выход из аккаунта
-            },
+            onTap: () {},
           ),
         ],
       ),

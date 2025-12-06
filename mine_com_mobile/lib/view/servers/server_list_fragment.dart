@@ -1,44 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../model/server_model.dart';
+import '../../provider/server_provider.dart';
 import 'server_detail_screen.dart';
 
-class ServerListWrapper extends StatefulWidget {
+class ServerListWrapper extends ConsumerWidget {
   const ServerListWrapper({super.key});
 
   @override
-  State<ServerListWrapper> createState() => _ServerListWrapperState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final servers = ref.watch(serverListProvider);
+    final serverNotifier = ref.read(serverListProvider.notifier);
 
-class _ServerListWrapperState extends State<ServerListWrapper> {
-  final List<ServerModel> _servers = [
-    ServerModel(
-      name: 'Minecraft Server 1',
-      status: 'Онлайн',
-      players: 12,
-      version: '1.20.1',
-      modLoader: 'Forge',
-      allocatedCores: 4,
-      allocatedRam: 8,
-      cpuUsage: 45.5,
-      memoryUsage: 65.3,
-    ),
-    ServerModel(
-      name: 'Minecraft Server 2',
-      status: 'Оффлайн',
-      players: 0,
-      version: '1.19.2',
-      modLoader: 'Fabric',
-      allocatedCores: 2,
-      allocatedRam: 4,
-      cpuUsage: 0.0,
-      memoryUsage: 0.0,
-    ),
-  ];
-
-  void _addServer() {
-    setState(() {
-      _servers.add(ServerModel(
-        name: 'Новый сервер ${_servers.length + 1}',
+    void addServer() {
+      serverNotifier.addServer(ServerModel(
+        name: 'Новый сервер ${servers.length + 1}',
         status: 'Онлайн',
         players: 0,
         version: '1.20.1',
@@ -48,26 +24,21 @@ class _ServerListWrapperState extends State<ServerListWrapper> {
         cpuUsage: 10.0,
         memoryUsage: 20.0,
       ));
-    });
-  }
+    }
 
-  void _removeServer() {
-    setState(() {
-      if (_servers.isNotEmpty) _servers.removeLast();
-    });
-  }
+    void removeServer() {
+      serverNotifier.removeServer();
+    }
 
-  void _handleServerAction(String action, int index) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$action: ${_servers[index].name}'),
-        duration: const Duration(milliseconds: 800),
-      ),
-    );
-  }
+    void handleServerAction(String action, int index) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$action: ${servers[index].name}'),
+          duration: const Duration(milliseconds: 800),
+        ),
+      );
+    }
 
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF141414),
       appBar: AppBar(
@@ -79,18 +50,18 @@ class _ServerListWrapperState extends State<ServerListWrapper> {
         foregroundColor: Colors.white,
         actions: [
           IconButton(
-            onPressed: _addServer,
+            onPressed: addServer,
             icon: const Icon(Icons.add, color: Color(0xFF00E676)),
             tooltip: 'Добавить сервер',
           ),
           IconButton(
-            onPressed: _removeServer,
+            onPressed: removeServer,
             icon: const Icon(Icons.remove, color: Colors.redAccent),
             tooltip: 'Удалить последний',
           ),
         ],
       ),
-      body: _servers.isEmpty
+      body: servers.isEmpty
           ? const Center(
               child: Text(
                 'Нет серверов',
@@ -99,10 +70,10 @@ class _ServerListWrapperState extends State<ServerListWrapper> {
             )
           : ListView.separated(
               padding: const EdgeInsets.all(16),
-              itemCount: _servers.length,
+              itemCount: servers.length,
               separatorBuilder: (_, __) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
-                final server = _servers[index];
+                final server = servers[index];
                 return GestureDetector(
                   onTap: () {
                     Navigator.of(context).push(
@@ -172,19 +143,19 @@ class _ServerListWrapperState extends State<ServerListWrapper> {
                                 icon: Icons.play_arrow,
                                 label: 'Запуск',
                                 onPressed: () =>
-                                    _handleServerAction('Запуск', index),
+                                    handleServerAction('Запуск', index),
                               ),
                               _buildActionButton(
                                 icon: Icons.stop,
                                 label: 'Стоп',
                                 onPressed: () =>
-                                    _handleServerAction('Остановка', index),
+                                    handleServerAction('Остановка', index),
                               ),
                               _buildActionButton(
                                 icon: Icons.refresh,
                                 label: 'Перезагрузка',
                                 onPressed: () =>
-                                    _handleServerAction('Перезагрузка', index),
+                                    handleServerAction('Перезагрузка', index),
                               ),
                             ],
                           ),

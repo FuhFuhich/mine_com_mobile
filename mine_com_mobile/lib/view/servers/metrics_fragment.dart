@@ -34,7 +34,6 @@ class _MetricsFragmentState extends State<MetricsFragment> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ВКЛАДКИ
             Container(
               decoration: BoxDecoration(
                 color: const Color(0xFF222222),
@@ -51,14 +50,12 @@ class _MetricsFragmentState extends State<MetricsFragment> {
             ),
             const SizedBox(height: 20),
 
-            // ГРАФИК
             if (_selectedTab == 0) _buildCpuChart(),
             if (_selectedTab == 1) _buildRamChart(),
             if (_selectedTab == 2) _buildOverview(),
 
             const SizedBox(height: 20),
 
-            // СТАТИСТИКА
             _buildStatsCard(),
           ],
         ),

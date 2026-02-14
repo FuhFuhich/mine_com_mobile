@@ -30,14 +30,4 @@ class ServerListNotifier extends StateNotifier<List<ServerModel>> {
       memoryUsage: 0.0,
     ),
   ]);
-
-  void addServer(ServerModel server) {
-    state = [...state, server];
-  }
-
-  void removeServer() {
-    if (state.isNotEmpty) {
-      state = state.sublist(0, state.length - 1);
-    }
-  }
 }

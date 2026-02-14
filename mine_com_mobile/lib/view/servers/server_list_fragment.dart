@@ -12,24 +12,6 @@ class ServerListWrapper extends ConsumerWidget {
     final servers = ref.watch(serverListProvider);
     final serverNotifier = ref.read(serverListProvider.notifier);
 
-    void addServer() {
-      serverNotifier.addServer(ServerModel(
-        name: 'Новый сервер ${servers.length + 1}',
-        status: 'Онлайн',
-        players: 0,
-        version: '1.20.1',
-        modLoader: 'Vanilla',
-        allocatedCores: 2,
-        allocatedRam: 4,
-        cpuUsage: 10.0,
-        memoryUsage: 20.0,
-      ));
-    }
-
-    void removeServer() {
-      serverNotifier.removeServer();
-    }
-
     void handleServerAction(String action, int index) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -39,33 +21,19 @@ class ServerListWrapper extends ConsumerWidget {
       );
     }
 
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final tt = theme.textTheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF141414),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF222222),
-        title: const Text(
-          'Список серверов',
-          style: TextStyle(color: Colors.white),
-        ),
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            onPressed: addServer,
-            icon: const Icon(Icons.add, color: Color(0xFF00E676)),
-            tooltip: 'Добавить сервер',
-          ),
-          IconButton(
-            onPressed: removeServer,
-            icon: const Icon(Icons.remove, color: Colors.redAccent),
-            tooltip: 'Удалить последний',
-          ),
-        ],
+        title: const Text('Список серверов'),
       ),
       body: servers.isEmpty
-          ? const Center(
+          ? Center(
               child: Text(
                 'Нет серверов',
-                style: TextStyle(color: Color(0xFFBBBBBB)),
+                style: tt.bodySmall,
               ),
             )
           : ListView.separated(
@@ -74,6 +42,9 @@ class ServerListWrapper extends ConsumerWidget {
               separatorBuilder: (_, __) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 final server = servers[index];
+                final isOnline = server.status == 'Онлайн';
+                final statusColor = isOnline ? cs.primary : cs.error;
+
                 return GestureDetector(
                   onTap: () {
                     Navigator.of(context).push(
@@ -84,9 +55,9 @@ class ServerListWrapper extends ConsumerWidget {
                   },
                   child: Container(
                     decoration: BoxDecoration(
-                      color: const Color(0xFF222222),
+                      color: theme.cardColor,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFF404040)),
+                      border: Border.all(color: theme.dividerColor),
                     ),
                     child: Column(
                       children: [
@@ -95,12 +66,8 @@ class ServerListWrapper extends ConsumerWidget {
                           child: Row(
                             children: [
                               Icon(
-                                server.status == 'Онлайн'
-                                    ? Icons.cloud_done
-                                    : Icons.cloud_off,
-                                color: server.status == 'Онлайн'
-                                    ? const Color(0xFF00E676)
-                                    : Colors.redAccent,
+                                isOnline ? Icons.cloud_done : Icons.cloud_off,
+                                color: statusColor,
                                 size: 28,
                               ),
                               const SizedBox(width: 12),
@@ -110,19 +77,14 @@ class ServerListWrapper extends ConsumerWidget {
                                   children: [
                                     Text(
                                       server.name,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16,
+                                      style: tt.titleMedium?.copyWith(
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
                                       'Игроков: ${server.players} | ${server.version}',
-                                      style: const TextStyle(
-                                        color: Color(0xFFBBBBBB),
-                                        fontSize: 12,
-                                      ),
+                                      style: tt.bodySmall,
                                     ),
                                   ],
                                 ),
@@ -132,7 +94,7 @@ class ServerListWrapper extends ConsumerWidget {
                         ),
                         Container(
                           height: 1,
-                          color: const Color(0xFF404040),
+                          color: theme.dividerColor,
                         ),
                         Padding(
                           padding: const EdgeInsets.all(12),
@@ -140,18 +102,21 @@ class ServerListWrapper extends ConsumerWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               _buildActionButton(
+                                context,
                                 icon: Icons.play_arrow,
                                 label: 'Запуск',
                                 onPressed: () =>
                                     handleServerAction('Запуск', index),
                               ),
                               _buildActionButton(
+                                context,
                                 icon: Icons.stop,
                                 label: 'Стоп',
                                 onPressed: () =>
                                     handleServerAction('Остановка', index),
                               ),
                               _buildActionButton(
+                                context,
                                 icon: Icons.refresh,
                                 label: 'Перезагрузка',
                                 onPressed: () =>
@@ -169,11 +134,16 @@ class ServerListWrapper extends ConsumerWidget {
     );
   }
 
-  Widget _buildActionButton({
+  Widget _buildActionButton(
+    BuildContext context, {
     required IconData icon,
     required String label,
     required VoidCallback onPressed,
   }) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final tt = theme.textTheme;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -182,12 +152,12 @@ class ServerListWrapper extends ConsumerWidget {
           child: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(0xFF00E676).withOpacity(0.1),
+              color: cs.primary.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
               icon,
-              color: const Color(0xFF00E676),
+              color: cs.primary,
               size: 20,
             ),
           ),
@@ -195,10 +165,7 @@ class ServerListWrapper extends ConsumerWidget {
         const SizedBox(height: 4),
         Text(
           label,
-          style: const TextStyle(
-            color: Color(0xFFBBBBBB),
-            fontSize: 10,
-          ),
+          style: tt.bodySmall?.copyWith(fontSize: 10),
         ),
       ],
     );

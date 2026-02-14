@@ -31,248 +31,196 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
-      backgroundColor: const Color(0xFF141414),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF222222),
         title: Text(
           _server.name,
-          style: const TextStyle(color: Colors.white),
+          style: theme.textTheme.titleLarge,
         ),
-        foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFF222222),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFF404040)),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    _server.status == 'Онлайн'
-                        ? Icons.cloud_done
-                        : Icons.cloud_off,
-                    color: _server.status == 'Онлайн'
-                        ? const Color(0xFF00E676)
-                        : Colors.redAccent,
-                    size: 40,
-                  ),
-                  const SizedBox(width: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Статус сервера',
-                        style: TextStyle(
-                          color: Color(0xFFBBBBBB),
-                          fontSize: 12,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        _server.status,
-                        style: TextStyle(
-                          color: _server.status == 'Онлайн'
-                              ? const Color(0xFF00E676)
-                              : Colors.redAccent,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+            _buildStatusCard(context),
             const SizedBox(height: 20),
 
-            _buildInfoSection(
-              title: 'Информация о сервере',
-              items: [
-                ('Версия Minecraft', _server.version),
-                ('Mod Loader', _server.modLoader),
-                ('Активные игроки', '${_server.players}'),
-                ('Выделенные ядра', '${_server.allocatedCores} ядер'),
-                ('Выделённая ОП', '${_server.allocatedRam} GB'),
-              ],
-            ),
+            _buildInfoSection(context),
             const SizedBox(height: 20),
 
-            _buildMetricsPreview(),
+            _buildMetricsPreview(context),
             const SizedBox(height: 20),
 
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 _buildControlButton(
+                  context,
                   icon: Icons.play_arrow,
                   label: 'Запуск',
-                  color: const Color(0xFF00E676),
                   onPressed: () => _handleAction('Запуск'),
                 ),
                 _buildControlButton(
+                  context,
                   icon: Icons.stop,
                   label: 'Стоп',
-                  color: Colors.redAccent,
                   onPressed: () => _handleAction('Остановка'),
+                  isDanger: true,
                 ),
                 _buildControlButton(
+                  context,
                   icon: Icons.refresh,
                   label: 'Перезагрузка',
-                  color: const Color(0xFF2196F3),
                   onPressed: () => _handleAction('Перезагрузка'),
                 ),
               ],
             ),
             const SizedBox(height: 20),
 
-            ElevatedButton.icon(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => MetricsFragment(server: _server),
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF00E676),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              icon: const Icon(Icons.show_chart, color: Colors.white),
-              label: const Text(
-                'Подробные метрики',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
+            _buildMetricsButton(context),
             const SizedBox(height: 12),
-            ElevatedButton.icon(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('CMD будет реализован позже'),
-                    duration: Duration(milliseconds: 800),
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2196F3),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              icon: const Icon(Icons.terminal, color: Colors.white),
-              label: const Text(
-                'Консоль Linux (скоро)',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
+            _buildConsoleButton(context),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildInfoSection({
-    required String title,
-    required List<(String, String)> items,
-  }) {
+  Widget _buildStatusCard(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final tt = theme.textTheme;
+    
+    final isOnline = _server.status == 'Онлайн';
+    final statusColor = isOnline ? cs.primary : cs.error;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF222222),
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF404040)),
+        border: Border.all(color: theme.dividerColor),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            isOnline ? Icons.cloud_done : Icons.cloud_off,
+            color: statusColor,
+            size: 40,
+          ),
+          const SizedBox(width: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Статус сервера',
+                style: tt.bodySmall?.copyWith(fontSize: 12),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                _server.status,
+                style: tt.titleLarge?.copyWith(
+                  color: statusColor,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoSection(BuildContext context) {
+    final theme = Theme.of(context);
+    final tt = theme.textTheme;
+    final cs = theme.colorScheme;
+
+    final items = [
+      ('Версия Minecraft', _server.version),
+      ('Mod Loader', _server.modLoader),
+      ('Активные игроки', '${_server.players}'),
+      ('Выделенные ядра', '${_server.allocatedCores} ядер'),
+      ('Выделённая ОП', '${_server.allocatedRam} GB'),
+    ];
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: theme.dividerColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+            'Информация о сервере',
+            style: tt.titleLarge,
           ),
           const SizedBox(height: 12),
-          ...items.map((item) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    item.$1,
-                    style: const TextStyle(
-                      color: Color(0xFFBBBBBB),
-                      fontSize: 14,
-                    ),
+          ...items.map((item) => Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  item.$1,
+                  style: tt.bodyMedium?.copyWith(fontSize: 14),
+                ),
+                Text(
+                  item.$2,
+                  style: tt.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
                   ),
-                  Text(
-                    item.$2,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }).toList(),
+                ),
+              ],
+            ),
+          )),
         ],
       ),
     );
   }
 
-  Widget _buildMetricsPreview() {
+  Widget _buildMetricsPreview(BuildContext context) {
+    final theme = Theme.of(context);
+    final tt = theme.textTheme;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF222222),
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF404040)),
+        border: Border.all(color: theme.dividerColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Текущие метрики',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+            style: theme.textTheme.titleLarge,
           ),
           const SizedBox(height: 16),
-          _buildMetricRow('CPU', _server.cpuUsage),
+          _buildMetricRow(context, 'CPU', _server.cpuUsage),
           const SizedBox(height: 12),
-          _buildMetricRow('Оперативная память', _server.memoryUsage),
+          _buildMetricRow(context, 'Оперативная память', _server.memoryUsage),
         ],
       ),
     );
   }
 
-  Widget _buildMetricRow(String label, double value) {
+  Widget _buildMetricRow(BuildContext context, String label, double value) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final tt = theme.textTheme;
+
+    final isHighUsage = value > 80;
+    final progressColor = isHighUsage ? cs.error : cs.primary;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -281,17 +229,13 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
           children: [
             Text(
               label,
-              style: const TextStyle(
-                color: Color(0xFFBBBBBB),
-                fontSize: 12,
-              ),
+              style: tt.bodySmall?.copyWith(fontSize: 12),
             ),
             Text(
               '${value.toStringAsFixed(1)}%',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 12,
+              style: tt.bodySmall?.copyWith(
                 fontWeight: FontWeight.bold,
+                fontSize: 12,
               ),
             ),
           ],
@@ -302,22 +246,27 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
           child: LinearProgressIndicator(
             value: value / 100,
             minHeight: 6,
-            backgroundColor: const Color(0xFF404040),
-            valueColor: AlwaysStoppedAnimation<Color>(
-              value > 80 ? Colors.redAccent : const Color(0xFF00E676),
-            ),
+            backgroundColor: theme.dividerColor,
+            valueColor: AlwaysStoppedAnimation<Color>(progressColor),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildControlButton({
+  Widget _buildControlButton(
+    BuildContext context, {
     required IconData icon,
     required String label,
-    required Color color,
     required VoidCallback onPressed,
+    bool isDanger = false,
   }) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final tt = theme.textTheme;
+    
+    final buttonColor = isDanger ? cs.error : cs.primary;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -326,21 +275,59 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
           child: Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.2),
+              color: buttonColor.withOpacity(0.2),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: color, size: 24),
+            child: Icon(icon, color: buttonColor, size: 24),
           ),
         ),
         const SizedBox(height: 6),
         Text(
           label,
-          style: const TextStyle(
-            color: Color(0xFFBBBBBB),
-            fontSize: 11,
-          ),
+          style: tt.bodySmall?.copyWith(fontSize: 11),
         ),
       ],
+    );
+  }
+
+  Widget _buildMetricsButton(BuildContext context) {
+    return ElevatedButton.icon(
+      onPressed: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => MetricsFragment(server: _server),
+          ),
+        );
+      },
+      icon: const Icon(Icons.show_chart),
+      label: const Text('Подробные метрики'),
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildConsoleButton(BuildContext context) {
+    return ElevatedButton.icon(
+      onPressed: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('CMD будет реализован позже'),
+            duration: Duration(milliseconds: 800),
+          ),
+        );
+      },
+      icon: const Icon(Icons.terminal),
+      label: const Text('Консоль Linux'),
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
     );
   }
 }

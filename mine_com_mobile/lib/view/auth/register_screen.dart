@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../view/main/home_screen.dart';
+import '../../provider/auth_provider.dart';
 
-class RegisterScreen extends StatefulWidget {
+class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -18,25 +20,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _obscure1 = true;
   bool _obscure2 = true;
   bool _acceptTerms = false;
-
-  void _onRegisterPressed() {
-    if (!_acceptTerms) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Примите условия использования')),
-      );
-      return;
-    }
-    if (_formKey.currentState?.validate() ?? false) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-      );
-    }
-  }
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
+    final isLoggedIn = ref.watch(authProvider);
+
+    if (isLoggedIn) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const HomeScreen()),
+          );
+        }
+      });
+    }
+
     return Scaffold(
-      backgroundColor: const Color(0xFF141414),
       body: SafeArea(
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
@@ -47,152 +48,108 @@ class _RegisterScreenState extends State<RegisterScreen> {
               child: SingleChildScrollView(
                 child: Form(
                   key: _formKey,
-                  child: AutofillGroup(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        const SizedBox(height: 40),
-                        const Text(
-                          'Регистрация',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 22),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const SizedBox(height: 40),
+                      const Text(
+                        'Регистрация',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 32),
+                      TextFormField(
+                        controller: _nameController,
+                        decoration: InputDecoration(
+                          labelText: 'Имя',
+                          prefixIcon: const Icon(Icons.person_outline),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                         ),
-                        const SizedBox(height: 32),
-                        TextFormField(
-                          controller: _nameController,
-                          decoration: const InputDecoration(
-                            labelText: 'Имя',
-                            prefixIcon:
-                                Icon(Icons.person_outline, color: Color(0xFFBBBBBB)),
-                            filled: true,
-                            fillColor: Color(0xFF222222),
-                            border: OutlineInputBorder(),
-                            labelStyle: TextStyle(color: Color(0xFFBBBBBB)),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        decoration: InputDecoration(
+                          labelText: 'Email',
+                          prefixIcon: const Icon(Icons.alternate_email),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _password1Controller,
+                        obscureText: _obscure1,
+                        decoration: InputDecoration(
+                          labelText: 'Пароль',
+                          prefixIcon: const Icon(Icons.lock_outline),
+                          suffixIcon: IconButton(
+                            onPressed: () => setState(() => _obscure1 = !_obscure1),
+                            icon: Icon(_obscure1 
+                              ? Icons.visibility_off_outlined 
+                              : Icons.visibility_outlined),
                           ),
-                          style: const TextStyle(color: Colors.white),
-                          //validator: (v) =>
-                             // v == null || v.isEmpty ? 'Введите имя' : null,
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                         ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _emailController,
-                          keyboardType: TextInputType.emailAddress,
-                          decoration: const InputDecoration(
-                            labelText: 'Email',
-                            prefixIcon:
-                                Icon(Icons.alternate_email, color: Color(0xFFBBBBBB)),
-                            filled: true,
-                            fillColor: Color(0xFF222222),
-                            border: OutlineInputBorder(),
-                            labelStyle: TextStyle(color: Color(0xFFBBBBBB)),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _password2Controller,
+                        obscureText: _obscure2,
+                        decoration: InputDecoration(
+                          labelText: 'Повторите пароль',
+                          prefixIcon: const Icon(Icons.lock_outline),
+                          suffixIcon: IconButton(
+                            onPressed: () => setState(() => _obscure2 = !_obscure2),
+                            icon: Icon(_obscure2 
+                              ? Icons.visibility_off_outlined 
+                              : Icons.visibility_outlined),
                           ),
-                          style: const TextStyle(color: Colors.white),
-                          /*validator: (v) {
-                            if (v == null || v.isEmpty) return 'Введите email';
-                            if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(v)) {
-                              return 'Некорректный email';
-                            }
-                            return null;
-                          },
-                          */
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                         ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _password1Controller,
-                          obscureText: _obscure1,
-                          decoration: InputDecoration(
-                            labelText: 'Пароль',
-                            prefixIcon:
-                                const Icon(Icons.key, color: Color(0xFFBBBBBB)),
-                            suffixIcon: IconButton(
-                              onPressed: () =>
-                                  setState(() => _obscure1 = !_obscure1),
-                              icon: Icon(
-                                _obscure1
-                                    ? Icons.remove_red_eye_outlined
-                                    : Icons.remove_red_eye,
-                                color: const Color(0xFFBBBBBB),
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          Checkbox(
+                            value: _acceptTerms,
+                            onChanged: (val) => setState(() => _acceptTerms = val ?? false),
+                          ),
+                          const Expanded(
+                            child: Text('Я принимаю условия использования'),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 28),
+                      ElevatedButton(
+                        onPressed: _isLoading ? null : _onRegisterPressed,
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: _isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2, 
+                                valueColor: AlwaysStoppedAnimation(Colors.white)
                               ),
+                            )
+                          : const Text(
+                              'Создать аккаунт',
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                             ),
-                            filled: true,
-                            fillColor: const Color(0xFF222222),
-                            border: const OutlineInputBorder(),
-                            labelStyle: const TextStyle(color: Color(0xFFBBBBBB)),
-                          ),
-                          style: const TextStyle(color: Colors.white),
-                          //validator: (v) =>
-                          //    v != null && v.length >= 6 ? null : 'Минимум 6 символов',
+                      ),
+                      const SizedBox(height: 20),
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text(
+                          'Уже есть аккаунт? Войти',
+                          style: TextStyle(fontSize: 16),
                         ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _password2Controller,
-                          obscureText: _obscure2,
-                          decoration: InputDecoration(
-                            labelText: 'Повторите пароль',
-                            prefixIcon:
-                                const Icon(Icons.key, color: Color(0xFFBBBBBB)),
-                            suffixIcon: IconButton(
-                              onPressed: () =>
-                                  setState(() => _obscure2 = !_obscure2),
-                              icon: Icon(
-                                _obscure2
-                                    ? Icons.remove_red_eye_outlined
-                                    : Icons.remove_red_eye,
-                                color: const Color(0xFFBBBBBB),
-                              ),
-                            ),
-                            filled: true,
-                            fillColor: const Color(0xFF222222),
-                            border: const OutlineInputBorder(),
-                            labelStyle: const TextStyle(color: Color(0xFFBBBBBB)),
-                          ),
-                          style: const TextStyle(color: Colors.white),
-                          validator: (v) =>
-                              v != _password1Controller.text
-                                  ? 'Пароли не совпадают'
-                                  : null,
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Checkbox(
-                              value: _acceptTerms,
-                              onChanged: (val) =>
-                                  setState(() => _acceptTerms = val ?? false),
-                              activeColor: const Color(0xFF00E676),
-                            ),
-                            const Expanded(
-                              child: Text(
-                                'Я принимаю условия использования',
-                                style: TextStyle(color: Color(0xFFBBBBBB)),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-                        ElevatedButton(
-                          onPressed: _onRegisterPressed,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF00E676),
-                            minimumSize: const Size(double.infinity, 48),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12)),
-                          ),
-                          child: const Text('Создать аккаунт',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 16)),
-                        ),
-                        const SizedBox(height: 16),
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: const Text('Уже есть аккаунт? Войти',
-                              style: TextStyle(color: Color(0xFFBBBBBB))),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -201,5 +158,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _onRegisterPressed() async {
+    if (!_acceptTerms) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Примите условия использования')),
+        );
+      }
+      return;
+    }
+    
+    if (_formKey.currentState?.validate() ?? false) {
+      setState(() => _isLoading = true);
+      
+      await ref.read(authProvider.notifier).login(
+        email: _emailController.text,
+        password: _password1Controller.text,
+        rememberMe: true, 
+      );
+      
+      setState(() => _isLoading = false);
+    }
   }
 }

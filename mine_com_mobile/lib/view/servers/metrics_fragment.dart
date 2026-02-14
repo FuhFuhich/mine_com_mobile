@@ -20,67 +20,57 @@ class _MetricsFragmentState extends State<MetricsFragment> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF141414),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF222222),
-        title: Text(
-          '${widget.server.name} - Метрики',
-          style: const TextStyle(color: Colors.white),
-        ),
-        foregroundColor: Colors.white,
+        title: Text('${widget.server.name} - Метрики'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              decoration: BoxDecoration(
-                color: const Color(0xFF222222),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFF404040)),
-              ),
-              child: Row(
-                children: [
-                  _buildTab('CPU', 0),
-                  _buildTab('Память', 1),
-                  _buildTab('Обзор', 2),
-                ],
-              ),
+            Row(
+              children: [
+                _buildTab(context, 'CPU', 0),
+                _buildTab(context, 'Память', 1),
+                _buildTab(context, 'Обзор', 2),
+              ],
             ),
             const SizedBox(height: 20),
-
-            if (_selectedTab == 0) _buildCpuChart(),
-            if (_selectedTab == 1) _buildRamChart(),
-            if (_selectedTab == 2) _buildOverview(),
-
+            if (_selectedTab == 0) _buildCpuChart(context),
+            if (_selectedTab == 1) _buildRamChart(context),
+            if (_selectedTab == 2) _buildOverview(context),
             const SizedBox(height: 20),
-
-            _buildStatsCard(),
+            _buildStatsCard(context),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTab(String label, int index) {
+  Widget _buildTab(BuildContext context, String label, int index) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final tt = theme.textTheme;
+
     final isSelected = _selectedTab == index;
+
+    final selectedTextColor = cs.primary;
+    final unselectedTextColor = cs.onSurface.withOpacity(0.70);
+
     return Expanded(
       child: GestureDetector(
         onTap: () => setState(() => _selectedTab = index),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: isSelected
-                ? const Color(0xFF00E676).withOpacity(0.2)
-                : Colors.transparent,
+            color: isSelected ? cs.primary.withOpacity(0.16) : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
           ),
           child: Center(
             child: Text(
               label,
-              style: TextStyle(
-                color: isSelected ? const Color(0xFF00E676) : const Color(0xFFBBBBBB),
+              style: (tt.bodyMedium ?? const TextStyle()).copyWith(
+                color: isSelected ? selectedTextColor : unselectedTextColor,
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
               ),
@@ -91,115 +81,118 @@ class _MetricsFragmentState extends State<MetricsFragment> {
     );
   }
 
-  Widget _buildCpuChart() {
+  Widget _buildCpuChart(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final tt = theme.textTheme;
+
+    final gridColor = cs.onSurface.withOpacity(0.18);
+    final borderColor = cs.outline.withOpacity(0.50);
+    final labelColor = cs.onSurface.withOpacity(0.70);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Нагрузка CPU (последние 10 измерений)',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-          ),
+          style: tt.titleSmall,
         ),
         const SizedBox(height: 16),
-        Container(
+        SizedBox(
           height: 300,
-          decoration: BoxDecoration(
-            color: const Color(0xFF222222),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFF404040)),
-          ),
-          padding: const EdgeInsets.all(16),
-          child: LineChart(
-            LineChartData(
-              gridData: FlGridData(
-                show: true,
-                drawVerticalLine: true,
-                horizontalInterval: 20,
-                verticalInterval: 1,
-                getDrawingHorizontalLine: (value) {
-                  return FlLine(
-                    color: const Color(0xFF404040),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: LineChart(
+              LineChartData(
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: true,
+                  horizontalInterval: 20,
+                  verticalInterval: 1,
+                  getDrawingHorizontalLine: (_) => FlLine(
+                    color: gridColor,
                     strokeWidth: 0.5,
-                  );
-                },
-                getDrawingVerticalLine: (value) {
-                  return FlLine(
-                    color: const Color(0xFF404040),
+                  ),
+                  getDrawingVerticalLine: (_) => FlLine(
+                    color: gridColor,
                     strokeWidth: 0.5,
-                  );
-                },
-              ),
-              titlesData: FlTitlesData(
-                show: true,
-                rightTitles: const AxisTitles(
-                  sideTitles: SideTitles(showTitles: false),
+                  ),
                 ),
-                topTitles: const AxisTitles(
-                  sideTitles: SideTitles(showTitles: false),
-                ),
-                bottomTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    reservedSize: 30,
-                    getTitlesWidget: (value, meta) {
-                      return Text(
+                titlesData: FlTitlesData(
+                  show: true,
+                  rightTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  topTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 30,
+                      getTitlesWidget: (value, meta) => Text(
                         '${value.toInt()}',
-                        style: const TextStyle(
-                          color: Color(0xFFBBBBBB),
+                        style: (tt.bodySmall ?? const TextStyle()).copyWith(
+                          color: labelColor,
                           fontSize: 10,
                         ),
-                      );
-                    },
+                      ),
+                    ),
                   ),
-                ),
-                leftTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    getTitlesWidget: (value, meta) {
-                      return Text(
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 40,
+                      getTitlesWidget: (value, meta) => Text(
                         '${value.toInt()}%',
-                        style: const TextStyle(
-                          color: Color(0xFFBBBBBB),
+                        style: (tt.bodySmall ?? const TextStyle()).copyWith(
+                          color: labelColor,
                           fontSize: 10,
                         ),
-                      );
-                    },
-                    reservedSize: 40,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-              borderData: FlBorderData(
-                show: true,
-                border: Border.all(
-                  color: const Color(0xFF404040),
-                  width: 1,
-                ),
-              ),
-              minX: 0,
-              maxX: 9,
-              minY: 0,
-              maxY: 100,
-              lineBarsData: [
-                LineChartBarData(
-                  spots: cpuData
-                      .asMap()
-                      .entries
-                      .map((e) => FlSpot(e.key.toDouble(), e.value))
-                      .toList(),
-                  isCurved: true,
-                  color: const Color(0xFF00E676),
-                  barWidth: 3,
-                  isStrokeCapRound: true,
-                  dotData: const FlDotData(show: true),
-                  belowBarData: BarAreaData(
-                    show: true,
-                    color: const Color(0xFF00E676).withOpacity(0.1),
+                borderData: FlBorderData(
+                  show: true,
+                  border: Border.all(
+                    color: borderColor,
+                    width: 1,
                   ),
                 ),
-              ],
+                minX: 0,
+                maxX: 9,
+                minY: 0,
+                maxY: 100,
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: cpuData
+                        .asMap()
+                        .entries
+                        .map((e) => FlSpot(e.key.toDouble(), e.value))
+                        .toList(),
+                    isCurved: true,
+                    color: cs.primary,
+                    barWidth: 3,
+                    isStrokeCapRound: true,
+                    dotData: FlDotData(
+                      show: true,
+                      getDotPainter: (spot, percent, bar, index) {
+                        return FlDotCirclePainter(
+                          radius: 2.6,
+                          color: cs.primary,
+                          strokeWidth: 1,
+                          strokeColor: cs.surface,
+                        );
+                      },
+                    ),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      color: cs.primary.withOpacity(0.12),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -207,115 +200,118 @@ class _MetricsFragmentState extends State<MetricsFragment> {
     );
   }
 
-  Widget _buildRamChart() {
+  Widget _buildRamChart(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final tt = theme.textTheme;
+
+    final gridColor = cs.onSurface.withOpacity(0.18);
+    final borderColor = cs.outline.withOpacity(0.50);
+    final labelColor = cs.onSurface.withOpacity(0.70);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Использование ОП (последние 10 измерений)',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-          ),
+          style: tt.titleSmall,
         ),
         const SizedBox(height: 16),
-        Container(
+        SizedBox(
           height: 300,
-          decoration: BoxDecoration(
-            color: const Color(0xFF222222),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFF404040)),
-          ),
-          padding: const EdgeInsets.all(16),
-          child: LineChart(
-            LineChartData(
-              gridData: FlGridData(
-                show: true,
-                drawVerticalLine: true,
-                horizontalInterval: 20,
-                verticalInterval: 1,
-                getDrawingHorizontalLine: (value) {
-                  return FlLine(
-                    color: const Color(0xFF404040),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: LineChart(
+              LineChartData(
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: true,
+                  horizontalInterval: 20,
+                  verticalInterval: 1,
+                  getDrawingHorizontalLine: (_) => FlLine(
+                    color: gridColor,
                     strokeWidth: 0.5,
-                  );
-                },
-                getDrawingVerticalLine: (value) {
-                  return FlLine(
-                    color: const Color(0xFF404040),
+                  ),
+                  getDrawingVerticalLine: (_) => FlLine(
+                    color: gridColor,
                     strokeWidth: 0.5,
-                  );
-                },
-              ),
-              titlesData: FlTitlesData(
-                show: true,
-                rightTitles: const AxisTitles(
-                  sideTitles: SideTitles(showTitles: false),
+                  ),
                 ),
-                topTitles: const AxisTitles(
-                  sideTitles: SideTitles(showTitles: false),
-                ),
-                bottomTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    reservedSize: 30,
-                    getTitlesWidget: (value, meta) {
-                      return Text(
+                titlesData: FlTitlesData(
+                  show: true,
+                  rightTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  topTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 30,
+                      getTitlesWidget: (value, meta) => Text(
                         '${value.toInt()}',
-                        style: const TextStyle(
-                          color: Color(0xFFBBBBBB),
+                        style: (tt.bodySmall ?? const TextStyle()).copyWith(
+                          color: labelColor,
                           fontSize: 10,
                         ),
-                      );
-                    },
+                      ),
+                    ),
                   ),
-                ),
-                leftTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    getTitlesWidget: (value, meta) {
-                      return Text(
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 40,
+                      getTitlesWidget: (value, meta) => Text(
                         '${value.toInt()}%',
-                        style: const TextStyle(
-                          color: Color(0xFFBBBBBB),
+                        style: (tt.bodySmall ?? const TextStyle()).copyWith(
+                          color: labelColor,
                           fontSize: 10,
                         ),
-                      );
-                    },
-                    reservedSize: 40,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-              borderData: FlBorderData(
-                show: true,
-                border: Border.all(
-                  color: const Color(0xFF404040),
-                  width: 1,
-                ),
-              ),
-              minX: 0,
-              maxX: 9,
-              minY: 0,
-              maxY: 100,
-              lineBarsData: [
-                LineChartBarData(
-                  spots: ramData
-                      .asMap()
-                      .entries
-                      .map((e) => FlSpot(e.key.toDouble(), e.value))
-                      .toList(),
-                  isCurved: true,
-                  color: const Color(0xFF2196F3),
-                  barWidth: 3,
-                  isStrokeCapRound: true,
-                  dotData: const FlDotData(show: true),
-                  belowBarData: BarAreaData(
-                    show: true,
-                    color: const Color(0xFF2196F3).withOpacity(0.1),
+                borderData: FlBorderData(
+                  show: true,
+                  border: Border.all(
+                    color: borderColor,
+                    width: 1,
                   ),
                 ),
-              ],
+                minX: 0,
+                maxX: 9,
+                minY: 0,
+                maxY: 100,
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: ramData
+                        .asMap()
+                        .entries
+                        .map((e) => FlSpot(e.key.toDouble(), e.value))
+                        .toList(),
+                    isCurved: true,
+                    color: cs.primary, 
+                    barWidth: 3,
+                    isStrokeCapRound: true,
+                    dotData: FlDotData(
+                      show: true,
+                      getDotPainter: (spot, percent, bar, index) {
+                        return FlDotCirclePainter(
+                          radius: 2.6,
+                          color: cs.primary, 
+                          strokeWidth: 1,
+                          strokeColor: cs.surface,
+                        );
+                      },
+                    ),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      color: cs.primary.withOpacity(0.12), 
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -323,34 +319,36 @@ class _MetricsFragmentState extends State<MetricsFragment> {
     );
   }
 
-  Widget _buildOverview() {
+
+  Widget _buildOverview(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Общий обзор метрик',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-          ),
+          style: tt.titleSmall,
         ),
         const SizedBox(height: 16),
         Row(
           children: [
             Expanded(
               child: _buildCircularMetric(
-                'CPU',
-                cpuData.last,
-                const Color(0xFF00E676),
+                context: context,
+                label: 'CPU',
+                value: cpuData.last,
+                color: cs.primary,
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: _buildCircularMetric(
-                'ОП',
-                ramData.last,
-                const Color(0xFF2196F3),
+                context: context,
+                label: 'ОП',
+                value: ramData.last,
+                color: cs.primary,
               ),
             ),
           ],
@@ -359,13 +357,27 @@ class _MetricsFragmentState extends State<MetricsFragment> {
     );
   }
 
-  Widget _buildCircularMetric(String label, double value, Color color) {
+  Widget _buildCircularMetric({
+    required BuildContext context,
+    required String label,
+    required double value,
+    required Color color,
+  }) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final tt = theme.textTheme;
+
+    final cardColor = theme.cardColor;
+    final borderColor = cs.outline.withOpacity(0.50);
+    final trackColor = cs.onSurface.withOpacity(0.18);
+    final secondaryText = cs.onSurface.withOpacity(0.70);
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF222222),
+        color: cardColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF404040)),
+        border: Border.all(color: borderColor),
       ),
       child: Column(
         children: [
@@ -378,7 +390,7 @@ class _MetricsFragmentState extends State<MetricsFragment> {
                 CircularProgressIndicator(
                   value: value / 100,
                   strokeWidth: 6,
-                  backgroundColor: const Color(0xFF404040),
+                  backgroundColor: trackColor,
                   valueColor: AlwaysStoppedAnimation<Color>(color),
                 ),
                 Center(
@@ -387,17 +399,17 @@ class _MetricsFragmentState extends State<MetricsFragment> {
                     children: [
                       Text(
                         '${value.toStringAsFixed(1)}%',
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: (tt.titleLarge ?? const TextStyle()).copyWith(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
+                          color: cs.onSurface,
                         ),
                       ),
                       Text(
                         label,
-                        style: const TextStyle(
-                          color: Color(0xFFBBBBBB),
+                        style: (tt.bodySmall ?? const TextStyle()).copyWith(
                           fontSize: 12,
+                          color: secondaryText,
                         ),
                       ),
                     ],
@@ -411,53 +423,75 @@ class _MetricsFragmentState extends State<MetricsFragment> {
     );
   }
 
-  Widget _buildStatsCard() {
+  Widget _buildStatsCard(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final tt = theme.textTheme;
+
+    final cardColor = theme.cardColor;
+    final borderColor = cs.outline.withOpacity(0.50);
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF222222),
+        color: cardColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF404040)),
+        border: Border.all(color: borderColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Статистика',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          Text('Статистика', style: tt.titleSmall),
           const SizedBox(height: 12),
-          _buildStatRow('Среднее CPU', '${(cpuData.reduce((a, b) => a + b) / cpuData.length).toStringAsFixed(1)}%'),
+          _buildStatRow(
+            context,
+            'Среднее CPU',
+            '${(cpuData.reduce((a, b) => a + b) / cpuData.length).toStringAsFixed(1)}%',
+          ),
           const SizedBox(height: 8),
-          _buildStatRow('Среднее ОП', '${(ramData.reduce((a, b) => a + b) / ramData.length).toStringAsFixed(1)}%'),
+          _buildStatRow(
+            context,
+            'Среднее ОП',
+            '${(ramData.reduce((a, b) => a + b) / ramData.length).toStringAsFixed(1)}%',
+          ),
           const SizedBox(height: 8),
-          _buildStatRow('Макс CPU', '${cpuData.reduce((a, b) => a > b ? a : b).toStringAsFixed(1)}%'),
+          _buildStatRow(
+            context,
+            'Макс CPU',
+            '${cpuData.reduce((a, b) => a > b ? a : b).toStringAsFixed(1)}%',
+          ),
           const SizedBox(height: 8),
-          _buildStatRow('Макс ОП', '${ramData.reduce((a, b) => a > b ? a : b).toStringAsFixed(1)}%'),
+          _buildStatRow(
+            context,
+            'Макс ОП',
+            '${ramData.reduce((a, b) => a > b ? a : b).toStringAsFixed(1)}%',
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildStatRow(String label, String value) {
+  Widget _buildStatRow(BuildContext context, String label, String value) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final tt = theme.textTheme;
+
+    final labelColor = cs.onSurface.withOpacity(0.70);
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: Color(0xFFBBBBBB),
+          style: (tt.bodySmall ?? const TextStyle()).copyWith(
+            color: labelColor,
             fontSize: 12,
           ),
         ),
         Text(
           value,
-          style: const TextStyle(
-            color: Colors.white,
+          style: (tt.bodyMedium ?? const TextStyle()).copyWith(
+            color: cs.onSurface,
             fontSize: 12,
             fontWeight: FontWeight.bold,
           ),

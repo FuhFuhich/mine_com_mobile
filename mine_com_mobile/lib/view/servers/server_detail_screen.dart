@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
-import '../../model/server_model.dart';
-import 'metrics_fragment.dart';
+import '../../model/minecraft_server_model.dart';
+import '../../model/linux_server_model.dart';
+import 'build fragments/metrics_fragment.dart';
+import 'build fragments/linux_console_fragment.dart';
+import 'build fragments/server_logs_fragment.dart';
 
 class ServerDetailScreen extends StatefulWidget {
-  final ServerModel server;
+  final MinecraftServerModel server;
 
   const ServerDetailScreen({super.key, required this.server});
 
@@ -12,7 +15,7 @@ class ServerDetailScreen extends StatefulWidget {
 }
 
 class _ServerDetailScreenState extends State<ServerDetailScreen> {
-  late ServerModel _server;
+  late MinecraftServerModel _server;
 
   @override
   void initState() {
@@ -33,10 +36,34 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     
+    // -----------------------------------------------------------------------------------------------------------------------
+    // Данные из бд
+    // -----------------------------------------------------------------------------------------------------------------------
+
+    final serverName = _server.name;
+    final serverStatus = 'Онлайн';
+    final minecraftVersion = '1.20.1';
+    final modLoader = 'Forge';
+    final activePlayers = 12;
+    final allocatedCores = 4;
+    final allocatedRam = 8;
+    final cpuUsage = 45.5;
+    final memoryUsage = 65.3;
+    
+    // SSH данные для консоли
+    final sshHost = '95.165.27.159';
+    final sshPort = 22;
+    final sshUsername = 'sha';
+    final sshPassword = 'sharoot';
+
+    // -----------------------------------------------------------------------------------------------------------------------
+    // Данные из бд
+    // -----------------------------------------------------------------------------------------------------------------------
+    
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          _server.name,
+          serverName,
           style: theme.textTheme.titleLarge,
         ),
       ),
@@ -45,13 +72,20 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _buildStatusCard(context),
+            _buildStatusCard(context, serverStatus),
             const SizedBox(height: 20),
 
-            _buildInfoSection(context),
+            _buildInfoSection(
+              context,
+              minecraftVersion,
+              modLoader,
+              activePlayers,
+              allocatedCores,
+              allocatedRam,
+            ),
             const SizedBox(height: 20),
 
-            _buildMetricsPreview(context),
+            _buildMetricsPreview(context, cpuUsage, memoryUsage),
             const SizedBox(height: 20),
 
             Row(
@@ -82,19 +116,30 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
 
             _buildMetricsButton(context),
             const SizedBox(height: 12),
-            _buildConsoleButton(context),
+            _buildConsoleButton(
+              context,
+              serverName,
+              sshHost,
+              sshPort,
+              sshUsername,
+              sshPassword,
+            ),
+            const SizedBox(height: 12),
+            _buildLogsButton(context),
+            const SizedBox(height: 12),
+            _buildBackupButton(context),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildStatusCard(BuildContext context) {
+  Widget _buildStatusCard(BuildContext context, String status) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final tt = theme.textTheme;
     
-    final isOnline = _server.status == 'Онлайн';
+    final isOnline = status == 'Онлайн';
     final statusColor = isOnline ? cs.primary : cs.error;
 
     return Container(
@@ -121,7 +166,7 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
               ),
               const SizedBox(height: 4),
               Text(
-                _server.status,
+                status,
                 style: tt.titleLarge?.copyWith(
                   color: statusColor,
                   fontWeight: FontWeight.bold,
@@ -134,17 +179,23 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
     );
   }
 
-  Widget _buildInfoSection(BuildContext context) {
+  Widget _buildInfoSection(
+    BuildContext context,
+    String version,
+    String modLoader,
+    int players,
+    int cores,
+    int ram,
+  ) {
     final theme = Theme.of(context);
     final tt = theme.textTheme;
-    final cs = theme.colorScheme;
 
     final items = [
-      ('Версия Minecraft', _server.version),
-      ('Mod Loader', _server.modLoader),
-      ('Активные игроки', '${_server.players}'),
-      ('Выделенные ядра', '${_server.allocatedCores} ядер'),
-      ('Выделённая ОП', '${_server.allocatedRam} GB'),
+      ('Версия Minecraft', version),
+      ('Mod Loader', modLoader),
+      ('Активные игроки', '$players'),
+      ('Выделенные ядра', '$cores ядер'),
+      ('Выделённая ОП', '$ram GB'),
     ];
 
     return Container(
@@ -186,9 +237,8 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
     );
   }
 
-  Widget _buildMetricsPreview(BuildContext context) {
+  Widget _buildMetricsPreview(BuildContext context, double cpu, double memory) {
     final theme = Theme.of(context);
-    final tt = theme.textTheme;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -205,9 +255,9 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
             style: theme.textTheme.titleLarge,
           ),
           const SizedBox(height: 16),
-          _buildMetricRow(context, 'CPU', _server.cpuUsage),
+          _buildMetricRow(context, 'CPU', cpu),
           const SizedBox(height: 12),
-          _buildMetricRow(context, 'Оперативная память', _server.memoryUsage),
+          _buildMetricRow(context, 'Оперативная память', memory),
         ],
       ),
     );
@@ -310,18 +360,74 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
     );
   }
 
-  Widget _buildConsoleButton(BuildContext context) {
+  Widget _buildConsoleButton(
+    BuildContext context,
+    String serverName,
+    String host,
+    int port,
+    String username,
+    String password,
+  ) {
     return ElevatedButton.icon(
       onPressed: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('CMD будет реализован позже'),
-            duration: Duration(milliseconds: 800),
+        final linuxServer = LinuxServerModel(
+          id: '1',
+          name: serverName,
+          host: host,
+          port: port,
+          username: username,
+          password: password,
+        );
+        
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => LinuxConsoleFragment(server: linuxServer),
           ),
         );
       },
       icon: const Icon(Icons.terminal),
       label: const Text('Консоль Linux'),
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLogsButton(BuildContext context) {
+    return ElevatedButton.icon(
+      onPressed: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => ServerLogsFragment(server: _server),
+          ),
+        );
+      },
+      icon: const Icon(Icons.history),
+      label: const Text('Логи сервера'),
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBackupButton(BuildContext context) {
+    return ElevatedButton.icon(
+      onPressed: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Бэкап будет реализован позже'),
+            duration: Duration(milliseconds: 800),
+          ),
+        );
+      },
+      icon: const Icon(Icons.backup),
+      label: const Text('Создание бэкапа сервера'),
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 14),
         shape: RoundedRectangleBorder(

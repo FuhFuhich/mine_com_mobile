@@ -1,13 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../model/server_model.dart';
+import '../model/minecraft_server_model.dart';
 
-final serverListProvider = StateNotifierProvider<ServerListNotifier, List<ServerModel>>((ref) {
-  return ServerListNotifier();
+final serverListProvider = StateNotifierProvider<MinecraftServerListNotifier, List<MinecraftServerModel>>((ref) {
+  return MinecraftServerListNotifier();
 });
 
-class ServerListNotifier extends StateNotifier<List<ServerModel>> {
-  ServerListNotifier() : super([
-    ServerModel(
+class MinecraftServerListNotifier extends StateNotifier<List<MinecraftServerModel>> {
+  MinecraftServerListNotifier() : super([
+    MinecraftServerModel(
       name: 'Minecraft Server 1',
       status: 'Онлайн',
       players: 12,
@@ -18,7 +18,7 @@ class ServerListNotifier extends StateNotifier<List<ServerModel>> {
       cpuUsage: 45.5,
       memoryUsage: 65.3,
     ),
-    ServerModel(
+    MinecraftServerModel(
       name: 'Minecraft Server 2',
       status: 'Оффлайн',
       players: 0,

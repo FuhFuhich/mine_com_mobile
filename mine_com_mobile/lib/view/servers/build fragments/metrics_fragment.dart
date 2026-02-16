@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import '../../model/server_model.dart';
+import '../../../model/minecraft_server_model.dart';
 
 class MetricsFragment extends StatefulWidget {
-  final ServerModel server;
+  final MinecraftServerModel server;
 
   const MetricsFragment({super.key, required this.server});
 
@@ -14,14 +14,36 @@ class MetricsFragment extends StatefulWidget {
 class _MetricsFragmentState extends State<MetricsFragment> {
   int _selectedTab = 0;
 
-  final List<double> cpuData = [10, 20, 35, 45, 50, 48, 52, 60, 55, 50];
-  final List<double> ramData = [30, 40, 50, 60, 65, 62, 68, 72, 70, 68];
-
   @override
   Widget build(BuildContext context) {
+    
+    // -----------------------------------------------------------------------------------------------------------------------
+    // Данные из бд
+    // -----------------------------------------------------------------------------------------------------------------------
+
+    final serverName = widget.server.name;
+    
+    // Исторические данные метрик
+    final List<double> cpuData = [10, 20, 35, 45, 50, 48, 52, 60, 55, 50];
+    final List<double> ramData = [30, 40, 50, 60, 65, 62, 68, 72, 70, 68];
+    
+    // Текущие значения
+    final currentCpu = 50.0;
+    final currentRam = 68.0;
+    
+    // Статистика (средние и максимальные значения)
+    final avgCpu = 42.5;
+    final avgRam = 58.5;
+    final maxCpu = 60.0;
+    final maxRam = 72.0;
+
+    // -----------------------------------------------------------------------------------------------------------------------
+    // Данные из бд
+    // -----------------------------------------------------------------------------------------------------------------------
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.server.name} - Метрики'),
+        title: Text('$serverName - Метрики'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -36,11 +58,11 @@ class _MetricsFragmentState extends State<MetricsFragment> {
               ],
             ),
             const SizedBox(height: 20),
-            if (_selectedTab == 0) _buildCpuChart(context),
-            if (_selectedTab == 1) _buildRamChart(context),
-            if (_selectedTab == 2) _buildOverview(context),
+            if (_selectedTab == 0) _buildCpuChart(context, cpuData),
+            if (_selectedTab == 1) _buildRamChart(context, ramData),
+            if (_selectedTab == 2) _buildOverview(context, currentCpu, currentRam),
             const SizedBox(height: 20),
-            _buildStatsCard(context),
+            _buildStatsCard(context, avgCpu, avgRam, maxCpu, maxRam),
           ],
         ),
       ),
@@ -81,7 +103,7 @@ class _MetricsFragmentState extends State<MetricsFragment> {
     );
   }
 
-  Widget _buildCpuChart(BuildContext context) {
+  Widget _buildCpuChart(BuildContext context, List<double> cpuData) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final tt = theme.textTheme;
@@ -200,7 +222,7 @@ class _MetricsFragmentState extends State<MetricsFragment> {
     );
   }
 
-  Widget _buildRamChart(BuildContext context) {
+  Widget _buildRamChart(BuildContext context, List<double> ramData) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final tt = theme.textTheme;
@@ -291,7 +313,7 @@ class _MetricsFragmentState extends State<MetricsFragment> {
                         .map((e) => FlSpot(e.key.toDouble(), e.value))
                         .toList(),
                     isCurved: true,
-                    color: cs.primary, 
+                    color: cs.primary,
                     barWidth: 3,
                     isStrokeCapRound: true,
                     dotData: FlDotData(
@@ -299,7 +321,7 @@ class _MetricsFragmentState extends State<MetricsFragment> {
                       getDotPainter: (spot, percent, bar, index) {
                         return FlDotCirclePainter(
                           radius: 2.6,
-                          color: cs.primary, 
+                          color: cs.primary,
                           strokeWidth: 1,
                           strokeColor: cs.surface,
                         );
@@ -307,7 +329,7 @@ class _MetricsFragmentState extends State<MetricsFragment> {
                     ),
                     belowBarData: BarAreaData(
                       show: true,
-                      color: cs.primary.withOpacity(0.12), 
+                      color: cs.primary.withOpacity(0.12),
                     ),
                   ),
                 ],
@@ -319,8 +341,7 @@ class _MetricsFragmentState extends State<MetricsFragment> {
     );
   }
 
-
-  Widget _buildOverview(BuildContext context) {
+  Widget _buildOverview(BuildContext context, double currentCpu, double currentRam) {
     final tt = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
 
@@ -338,7 +359,7 @@ class _MetricsFragmentState extends State<MetricsFragment> {
               child: _buildCircularMetric(
                 context: context,
                 label: 'CPU',
-                value: cpuData.last,
+                value: currentCpu,
                 color: cs.primary,
               ),
             ),
@@ -347,7 +368,7 @@ class _MetricsFragmentState extends State<MetricsFragment> {
               child: _buildCircularMetric(
                 context: context,
                 label: 'ОП',
-                value: ramData.last,
+                value: currentRam,
                 color: cs.primary,
               ),
             ),
@@ -423,7 +444,13 @@ class _MetricsFragmentState extends State<MetricsFragment> {
     );
   }
 
-  Widget _buildStatsCard(BuildContext context) {
+  Widget _buildStatsCard(
+    BuildContext context,
+    double avgCpu,
+    double avgRam,
+    double maxCpu,
+    double maxRam,
+  ) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final tt = theme.textTheme;
@@ -446,25 +473,25 @@ class _MetricsFragmentState extends State<MetricsFragment> {
           _buildStatRow(
             context,
             'Среднее CPU',
-            '${(cpuData.reduce((a, b) => a + b) / cpuData.length).toStringAsFixed(1)}%',
+            '${avgCpu.toStringAsFixed(1)}%',
           ),
           const SizedBox(height: 8),
           _buildStatRow(
             context,
             'Среднее ОП',
-            '${(ramData.reduce((a, b) => a + b) / ramData.length).toStringAsFixed(1)}%',
+            '${avgRam.toStringAsFixed(1)}%',
           ),
           const SizedBox(height: 8),
           _buildStatRow(
             context,
             'Макс CPU',
-            '${cpuData.reduce((a, b) => a > b ? a : b).toStringAsFixed(1)}%',
+            '${maxCpu.toStringAsFixed(1)}%',
           ),
           const SizedBox(height: 8),
           _buildStatRow(
             context,
             'Макс ОП',
-            '${ramData.reduce((a, b) => a > b ? a : b).toStringAsFixed(1)}%',
+            '${maxRam.toStringAsFixed(1)}%',
           ),
         ],
       ),

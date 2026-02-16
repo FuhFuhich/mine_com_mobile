@@ -20,22 +20,34 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
       body: _pages[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: theme.cardColor,
+        selectedItemColor: const Color(0xFF00E676),
+        unselectedItemColor: theme.colorScheme.onSurface.withOpacity(0.6),
+        selectedFontSize: 12,
+        unselectedFontSize: 11,
+        elevation: 8,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
             label: 'Профиль',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.storage),
+            icon: Icon(Icons.dns_outlined),
+            activeIcon: Icon(Icons.dns),
             label: 'Серверы',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings_outlined),
+            activeIcon: Icon(Icons.settings),
             label: 'Настройки',
           ),
         ],

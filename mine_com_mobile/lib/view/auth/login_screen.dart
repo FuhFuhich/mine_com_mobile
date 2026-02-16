@@ -81,6 +81,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       const Text(
                         'Вход в аккаунт',
                         textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 32),
                       TextFormField(

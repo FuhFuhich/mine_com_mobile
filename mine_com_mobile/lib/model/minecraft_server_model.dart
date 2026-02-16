@@ -1,4 +1,4 @@
-class ServerModel {
+class MinecraftServerModel {
   final String name;
   final String status;
   final int players;
@@ -9,7 +9,7 @@ class ServerModel {
   final double cpuUsage;
   final double memoryUsage;
 
-  ServerModel({
+  MinecraftServerModel({
     required this.name,
     required this.status,
     required this.players,

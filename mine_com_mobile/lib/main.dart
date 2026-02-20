@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:mine_com_mobile/l10n/app_localizations.dart';
 import 'view/auth/login_screen.dart';
 import 'view/main/home_screen.dart';
 import 'theme/app_theme.dart';
 import '../../provider/settings_provider.dart';
 import '../../provider/auth_provider.dart';
+import '../../provider/language_provider.dart';
+import '../services/notification_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await NotificationService().initialize();
   runApp(const ProviderScope(child: MyApp()));
 }
 
@@ -16,12 +22,21 @@ class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isLoggedIn = ref.watch(authProvider);
+    final locale = ref.watch(localeProvider);
 
     return MaterialApp(
       title: 'Auth Demo',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ref.watch(darkThemeProvider) ? ThemeMode.dark : ThemeMode.light,
+      locale: locale,
+      supportedLocales: supportedLocales,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       home: isLoggedIn ? const HomeScreen() : const LoginScreen(),
     );
   }

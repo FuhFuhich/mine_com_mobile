@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../provider/settings_provider.dart';
 import '../../provider/auth_provider.dart';
+import '../../provider/notification_provider.dart';
+import '../../provider/language_provider.dart';
 import '../auth/login_screen.dart';
+import 'language_picker_fragment.dart';
+import 'package:mine_com_mobile/l10n/app_localizations.dart';
 
 class SettingsFragment extends ConsumerWidget {
   const SettingsFragment({super.key});
@@ -10,40 +14,33 @@ class SettingsFragment extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-
-    // -----------------------------------------------------------------------------------------------------------------------
-    // Данные из бд
-    // -----------------------------------------------------------------------------------------------------------------------
+    final l10n = AppLocalizations.of(context)!;
 
     final notificationsEnabled = ref.watch(notificationsProvider);
     final darkThemeEnabled = ref.watch(darkThemeProvider);
-    final appVersion = '1.0.0';
+    const appVersion = '1.0.0';
 
-    // -----------------------------------------------------------------------------------------------------------------------
-    // Данные из бд
-    // -----------------------------------------------------------------------------------------------------------------------
-    
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Настройки'),
+        title: Text(l10n.settings),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _buildSectionTitle(theme, 'Внешний вид'),
-          _buildAppearanceSection(theme, context, ref, darkThemeEnabled),
+          _buildSectionTitle(theme, l10n.appearance),
+          _buildAppearanceSection(theme, context, ref, darkThemeEnabled, l10n),
           const SizedBox(height: 16),
-          
-          _buildSectionTitle(theme, 'Уведомления'),
-          _buildNotificationsSection(theme, context, ref, notificationsEnabled),
+
+          _buildSectionTitle(theme, l10n.notifications),
+          _buildNotificationsSection(theme, context, ref, notificationsEnabled, l10n),
           const SizedBox(height: 16),
-          
-          _buildSectionTitle(theme, 'О приложении'),
-          _buildAboutSection(theme, context, appVersion),
+
+          _buildSectionTitle(theme, l10n.aboutApp),
+          _buildAboutSection(theme, context, appVersion, l10n),
           const SizedBox(height: 16),
-          
-          _buildSectionTitle(theme, 'Аккаунт'),
-          _buildAccountSection(theme, context, ref),
+
+          _buildSectionTitle(theme, l10n.account),
+          _buildAccountSection(theme, context, ref, l10n),
           const SizedBox(height: 24),
         ],
       ),
@@ -69,6 +66,7 @@ class SettingsFragment extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     bool darkThemeEnabled,
+    AppLocalizations l10n,
   ) {
     return Container(
       decoration: BoxDecoration(
@@ -81,22 +79,25 @@ class SettingsFragment extends ConsumerWidget {
           _buildSwitchTile(
             theme,
             icon: Icons.dark_mode_outlined,
-            title: 'Темная тема',
-            subtitle: 'Изменить внешний вид приложения',
+            title: l10n.darkTheme,
+            subtitle: l10n.darkThemeSubtitle,
             value: darkThemeEnabled,
-            onChanged: (val) {
-              ref.read(darkThemeProvider.notifier).toggle(val);
-            },
+            onChanged: (val) => ref.read(darkThemeProvider.notifier).toggle(val),
           ),
           Divider(height: 1, color: theme.dividerColor),
-          _buildListTile(
-            theme,
-            icon: Icons.language,
-            title: 'Язык',
-            subtitle: 'Русский',
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Смена языка будет добавлена позже')),
+          Consumer(
+            builder: (context, ref, _) {
+              final locale = ref.watch(localeProvider);
+              final langName = localeNames[locale.languageCode] ?? locale.languageCode;
+              return _buildListTile(
+                theme,
+                icon: Icons.language,
+                title: l10n.language,
+                subtitle: langName,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LanguagePickerFragment()),
+                ),
               );
             },
           ),
@@ -110,6 +111,7 @@ class SettingsFragment extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     bool notificationsEnabled,
+    AppLocalizations l10n,
   ) {
     return Container(
       decoration: BoxDecoration(
@@ -120,12 +122,10 @@ class SettingsFragment extends ConsumerWidget {
       child: _buildSwitchTile(
         theme,
         icon: Icons.notifications_outlined,
-        title: 'Уведомления',
-        subtitle: 'Получать уведомления о статусе серверов',
+        title: l10n.notifications,
+        subtitle: l10n.notificationsSubtitle,
         value: notificationsEnabled,
-        onChanged: (val) {
-          ref.read(notificationsProvider.notifier).toggle(val);
-        },
+        onChanged: (val) => ref.read(notificationsProvider.notifier).toggle(val),
       ),
     );
   }
@@ -134,6 +134,7 @@ class SettingsFragment extends ConsumerWidget {
     ThemeData theme,
     BuildContext context,
     String version,
+    AppLocalizations l10n,
   ) {
     return Container(
       decoration: BoxDecoration(
@@ -146,35 +147,29 @@ class SettingsFragment extends ConsumerWidget {
           _buildListTile(
             theme,
             icon: Icons.info_outline,
-            title: 'О приложении',
-            subtitle: 'Версия $version',
-            onTap: () {
-              _showAboutDialog(context, theme, version);
-            },
+            title: l10n.aboutApp,
+            subtitle: '${l10n.version} $version',
+            onTap: () => _showAboutDialog(context, theme, version, l10n),
           ),
           Divider(height: 1, color: theme.dividerColor),
           _buildListTile(
             theme,
             icon: Icons.help_outline,
-            title: 'Помощь и поддержка',
-            subtitle: 'Документация и FAQ',
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Открыть справку')),
-              );
-            },
+            title: l10n.helpSupport,
+            subtitle: l10n.helpSupportSubtitle,
+            onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(l10n.helpSupport)),
+            ),
           ),
           Divider(height: 1, color: theme.dividerColor),
           _buildListTile(
             theme,
             icon: Icons.privacy_tip_outlined,
-            title: 'Политика конфиденциальности',
-            subtitle: 'Условия использования',
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Политика конфиденциальности')),
-              );
-            },
+            title: l10n.privacyPolicy,
+            subtitle: l10n.privacyPolicySubtitle,
+            onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(l10n.privacyPolicy)),
+            ),
           ),
         ],
       ),
@@ -185,6 +180,7 @@ class SettingsFragment extends ConsumerWidget {
     ThemeData theme,
     BuildContext context,
     WidgetRef ref,
+    AppLocalizations l10n,
   ) {
     return Container(
       decoration: BoxDecoration(
@@ -197,22 +193,20 @@ class SettingsFragment extends ConsumerWidget {
           _buildListTile(
             theme,
             icon: Icons.security_outlined,
-            title: 'Безопасность',
-            subtitle: 'Пароль и двухфакторная аутентификация',
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Настройки безопасности')),
-              );
-            },
+            title: l10n.security,
+            subtitle: l10n.securitySubtitle,
+            onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(l10n.security)),
+            ),
           ),
           Divider(height: 1, color: theme.dividerColor),
           _buildListTile(
             theme,
             icon: Icons.logout,
             iconColor: Colors.red,
-            title: 'Выйти из аккаунта',
+            title: l10n.logout,
             titleColor: Colors.red,
-            onTap: () => _showLogoutDialog(context, ref),
+            onTap: () => _showLogoutDialog(context, ref, l10n),
           ),
         ],
       ),
@@ -235,24 +229,11 @@ class SettingsFragment extends ConsumerWidget {
           color: const Color(0xFF00E676).withOpacity(0.1),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(
-          icon,
-          color: const Color(0xFF00E676),
-          size: 24,
-        ),
+        child: Icon(icon, color: const Color(0xFF00E676), size: 24),
       ),
-      title: Text(
-        title,
-        style: theme.textTheme.titleSmall,
-      ),
-      subtitle: Text(
-        subtitle,
-        style: theme.textTheme.bodySmall,
-      ),
-      trailing: Switch(
-        value: value,
-        onChanged: onChanged,
-      ),
+      title: Text(title, style: theme.textTheme.titleSmall),
+      subtitle: Text(subtitle, style: theme.textTheme.bodySmall),
+      trailing: Switch(value: value, onChanged: onChanged),
     );
   }
 
@@ -275,48 +256,32 @@ class SettingsFragment extends ConsumerWidget {
           color: (iconColor ?? const Color(0xFF00E676)).withOpacity(0.1),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(
-          icon,
-          color: iconColor ?? const Color(0xFF00E676),
-          size: 24,
-        ),
+        child: Icon(icon, color: iconColor ?? const Color(0xFF00E676), size: 24),
       ),
-      title: Text(
-        title,
-        style: theme.textTheme.titleSmall?.copyWith(
-          color: titleColor,
-        ),
-      ),
+      title: Text(title, style: theme.textTheme.titleSmall?.copyWith(color: titleColor)),
       subtitle: subtitle != null
-          ? Text(
-              subtitle,
-              style: theme.textTheme.bodySmall,
-            )
+          ? Text(subtitle, style: theme.textTheme.bodySmall)
           : null,
-      trailing: trailing ??
-          (showArrow
-              ? const Icon(Icons.arrow_forward_ios, size: 16)
-              : null),
+      trailing: trailing ?? (showArrow ? const Icon(Icons.arrow_forward_ios, size: 16) : null),
       onTap: onTap,
     );
   }
 
-  void _showLogoutDialog(BuildContext context, WidgetRef ref) {
+  void _showLogoutDialog(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Выход из аккаунта'),
-        content: const Text('Вы уверены, что хотите выйти из аккаунта?'),
+        title: Text(l10n.logoutTitle),
+        content: Text(l10n.logoutConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Отмена'),
+            child: Text(l10n.cancel),
           ),
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(context);
               await ref.read(authProvider.notifier).logout();
-              
               if (context.mounted) {
                 Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(builder: (_) => const LoginScreen()),
@@ -328,14 +293,19 @@ class SettingsFragment extends ConsumerWidget {
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Выйти'),
+            child: Text(l10n.logout),
           ),
         ],
       ),
     );
   }
 
-  void _showAboutDialog(BuildContext context, ThemeData theme, String version) {
+  void _showAboutDialog(
+    BuildContext context,
+    ThemeData theme,
+    String version,
+    AppLocalizations l10n,
+  ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -347,16 +317,10 @@ class SettingsFragment extends ConsumerWidget {
                 color: const Color(0xFF00E676).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(
-                Icons.dns_rounded,
-                color: Color(0xFF00E676),
-                size: 32,
-              ),
+              child: const Icon(Icons.dns_rounded, color: Color(0xFF00E676), size: 32),
             ),
             const SizedBox(width: 12),
-            const Expanded(
-              child: Text('О приложении'),
-            ),
+            Expanded(child: Text(l10n.aboutApp)),
           ],
         ),
         content: SingleChildScrollView(
@@ -364,35 +328,29 @@ class SettingsFragment extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'Программный комплекс автоматизации развертывания и управления Minecraft-серверами',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 15,
-                ),
-              ),
-              const SizedBox(height: 16),
-              _buildInfoRow('Версия', version),
-              _buildInfoRow('Платформа', 'Unix-подобные системы'),
-              _buildInfoRow('Разработчик', 'Minecraft Manager Team'),
-              const SizedBox(height: 16),
               Text(
-                'Возможности:',
-                style: theme.textTheme.titleSmall,
+                l10n.appDescription,
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
               ),
+              const SizedBox(height: 16),
+              _buildInfoRow(l10n.version, version),
+              _buildInfoRow(l10n.platform, l10n.platformValue),
+              _buildInfoRow(l10n.developer, l10n.developerValue),
+              const SizedBox(height: 16),
+              Text(l10n.featuresTitle, style: theme.textTheme.titleSmall),
               const SizedBox(height: 8),
-              _buildFeatureItem('SSH консоль для управления'),
-              _buildFeatureItem('Мониторинг метрик в реальном времени'),
-              _buildFeatureItem('Просмотр логов серверов'),
-              _buildFeatureItem('Автоматизация развертывания'),
-              _buildFeatureItem('Управление бэкапами'),
+              _buildFeatureItem(l10n.featureSsh),
+              _buildFeatureItem(l10n.featureMonitoring),
+              _buildFeatureItem(l10n.featureLogs),
+              _buildFeatureItem(l10n.featureAutomation),
+              _buildFeatureItem(l10n.featureBackups),
             ],
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Закрыть'),
+            child: Text(l10n.close),
           ),
         ],
       ),
@@ -405,20 +363,8 @@ class SettingsFragment extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            '$label:',
-            style: const TextStyle(
-              color: Colors.grey,
-              fontSize: 13,
-            ),
-          ),
-          Text(
-            value,
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 13,
-            ),
-          ),
+          Text('$label:', style: const TextStyle(color: Colors.grey, fontSize: 13)),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
         ],
       ),
     );
@@ -429,18 +375,9 @@ class SettingsFragment extends ConsumerWidget {
       padding: const EdgeInsets.only(bottom: 4),
       child: Row(
         children: [
-          const Icon(
-            Icons.check_circle,
-            color: Color(0xFF00E676),
-            size: 16,
-          ),
+          const Icon(Icons.check_circle, color: Color(0xFF00E676), size: 16),
           const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              text,
-              style: const TextStyle(fontSize: 13),
-            ),
-          ),
+          Expanded(child: Text(text, style: const TextStyle(fontSize: 13))),
         ],
       ),
     );

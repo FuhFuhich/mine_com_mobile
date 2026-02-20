@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:dartssh2/dartssh2.dart';
 import 'package:xterm/xterm.dart';
 import '../../../model/linux_server_model.dart';
+import 'package:mine_com_mobile/l10n/app_localizations.dart';
 
 class LinuxConsoleFragment extends StatefulWidget {
   final LinuxServerModel server;
@@ -50,6 +51,8 @@ class _LinuxConsoleFragmentState extends State<LinuxConsoleFragment> {
   Future<void> _connectToServer() async {
     if (_isConnecting) return;
 
+    final l10n = AppLocalizations.of(context)!;
+
     setState(() {
       _isConnecting = true;
       _errorMessage = null;
@@ -75,20 +78,22 @@ class _LinuxConsoleFragmentState extends State<LinuxConsoleFragment> {
         _isConnecting = false;
       });
 
-      _showSnackBar('Подключено к ${widget.server.name}', isSuccess: true);
+      _showSnackBar('${l10n.connectedToLinuxConsole} ${widget.server.name}', isSuccess: true);
       
       await _startInteractiveSession(client);
       
     } catch (e) {
       setState(() {
         _isConnecting = false;
-        _errorMessage = 'Ошибка подключения: $e';
+        _errorMessage = '${l10n.connectionErrorLinuxConsole} $e';
       });
-      _showSnackBar('Не удалось подключиться: $e');
+      _showSnackBar('${l10n.failedToConnect1LinuxConsole} $e');
     }
   }
 
   Future<void> _startInteractiveSession(SSHClient client) async {
+    final l10n = AppLocalizations.of(context)!;
+    
     try {
       _shell = await client.shell(
         pty: SSHPtyConfig(
@@ -107,16 +112,16 @@ class _LinuxConsoleFragmentState extends State<LinuxConsoleFragment> {
 
       _shell!.done.then((_) {
         if (mounted) {
-          _showSnackBar('SSH сессия завершена');
+          _showSnackBar(l10n.sshSessionEndedLinuxConsole);
           _disconnect();
         }
       });
       
     } catch (e) {
       setState(() {
-        _errorMessage = 'Ошибка запуска shell: $e';
+        _errorMessage = '${l10n.shellStartupErrorLinuxConsole} $e';
       });
-      _showSnackBar('Ошибка запуска shell: $e');
+      _showSnackBar('${l10n.shellStartupErrorLinuxConsole} $e');
     }
   }
 
@@ -135,7 +140,9 @@ class _LinuxConsoleFragmentState extends State<LinuxConsoleFragment> {
     });
     
     _terminal?.eraseDisplay();
-    _showSnackBar('Отключено от сервера');
+    
+    final l10n = AppLocalizations.of(context)!;
+    _showSnackBar(l10n.disconnectedFromServerLinuxConsole);
   }
 
   void _showSnackBar(String message, {bool isSuccess = false}) {
@@ -170,22 +177,23 @@ class _LinuxConsoleFragmentState extends State<LinuxConsoleFragment> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.server.name} - Консоль'),
+        title: Text('${widget.server.name} - ${l10n.consoleLinuxConsole}'),
         actions: [
           if (_isConnected)
             IconButton(
               icon: const Icon(Icons.power_settings_new),
               onPressed: _disconnect,
-              tooltip: 'Отключиться',
+              tooltip: l10n.disconnectLinuxConsole,
             ),
           if (!_isConnected && !_isConnecting)
             IconButton(
               icon: const Icon(Icons.refresh),
               onPressed: _connectToServer,
-              tooltip: 'Переподключиться',
+              tooltip: l10n.reconnectLinuxConsole,
             ),
         ],
       ),
@@ -210,6 +218,8 @@ class _LinuxConsoleFragmentState extends State<LinuxConsoleFragment> {
   }
 
   Widget _buildConnectingView() {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -217,7 +227,7 @@ class _LinuxConsoleFragmentState extends State<LinuxConsoleFragment> {
           const CircularProgressIndicator(),
           const SizedBox(height: 24),
           Text(
-            'Подключение к ${widget.server.name}...',
+            '${l10n.connectedToLinuxConsole} ${widget.server.name}...',
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,
@@ -237,6 +247,8 @@ class _LinuxConsoleFragmentState extends State<LinuxConsoleFragment> {
   }
 
   Widget _buildErrorView(ThemeData theme) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -250,7 +262,7 @@ class _LinuxConsoleFragmentState extends State<LinuxConsoleFragment> {
             ),
             const SizedBox(height: 24),
             Text(
-              'Не удалось подключиться',
+              l10n.failedToConnect2LinuxConsole,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -259,7 +271,7 @@ class _LinuxConsoleFragmentState extends State<LinuxConsoleFragment> {
             ),
             const SizedBox(height: 12),
             Text(
-              _errorMessage ?? 'Неизвестная ошибка',
+              _errorMessage ?? l10n.unknownErrorLinuxConsole,
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey.shade600,
@@ -270,7 +282,7 @@ class _LinuxConsoleFragmentState extends State<LinuxConsoleFragment> {
             ElevatedButton.icon(
               onPressed: _connectToServer,
               icon: const Icon(Icons.refresh),
-              label: const Text('Попробовать снова'),
+              label: Text(l10n.tryAgainLinuxConsole),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,

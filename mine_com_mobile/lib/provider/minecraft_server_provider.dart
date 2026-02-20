@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../model/minecraft_server_model.dart';
+import 'package:mine_com_mobile/l10n/app_localizations.dart';
 
 final serverListProvider = StateNotifierProvider<MinecraftServerListNotifier, List<MinecraftServerModel>>((ref) {
   return MinecraftServerListNotifier();
@@ -9,7 +10,7 @@ class MinecraftServerListNotifier extends StateNotifier<List<MinecraftServerMode
   MinecraftServerListNotifier() : super([
     MinecraftServerModel(
       name: 'Minecraft Server 1',
-      status: 'Онлайн',
+      status: 'Online',
       players: 12,
       version: '1.20.1',
       modLoader: 'Forge',
@@ -20,7 +21,7 @@ class MinecraftServerListNotifier extends StateNotifier<List<MinecraftServerMode
     ),
     MinecraftServerModel(
       name: 'Minecraft Server 2',
-      status: 'Оффлайн',
+      status: 'Offline',
       players: 0,
       version: '1.19.2',
       modLoader: 'Fabric',
@@ -31,3 +32,16 @@ class MinecraftServerListNotifier extends StateNotifier<List<MinecraftServerMode
     ),
   ]);
 }
+
+final searchQueryProvider = StateProvider<String>((ref) => '');
+
+final filteredServerListProvider = Provider<List<MinecraftServerModel>>((ref) {
+  final servers = ref.watch(serverListProvider);
+  final query = ref.watch(searchQueryProvider).toLowerCase();
+  
+  if (query.isEmpty) return servers;
+  
+  return servers.where((server) {
+    return server.name.toLowerCase().contains(query);
+  }).toList();
+});

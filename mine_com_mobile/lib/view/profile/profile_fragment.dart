@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../provider/minecraft_server_provider.dart';
+import 'package:mine_com_mobile/l10n/app_localizations.dart';
 
 class ProfileFragment extends ConsumerWidget {
   const ProfileFragment({super.key});
@@ -9,6 +10,7 @@ class ProfileFragment extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final servers = ref.watch(serverListProvider);
+    final l10n = AppLocalizations.of(context)!;
     
     // -----------------------------------------------------------------------------------------------------------------------
     // Данные из бд
@@ -30,14 +32,14 @@ class ProfileFragment extends ConsumerWidget {
     
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Профиль'),
+        title: Text(l10n.profileMainMenu),
         actions: [
           IconButton(
             icon: const Icon(Icons.edit_outlined),
-            tooltip: 'Редактировать профиль',
+            tooltip: l10n.editprofile1Profile,
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Редактирование профиля')),
+                SnackBar(content: Text(l10n.editProfileProfile)),
               );
             },
           ),
@@ -47,10 +49,10 @@ class ProfileFragment extends ConsumerWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            _buildProfileHeader(theme),
+            _buildProfileHeader(theme, l10n),
             const SizedBox(height: 24),
             
-            _buildStatsCards(theme, totalServers, onlineServers, totalPlayers),
+            _buildStatsCards(theme, totalServers, onlineServers, totalPlayers, l10n),
             const SizedBox(height: 24),
             
             _buildServerOverview(
@@ -60,17 +62,18 @@ class ProfileFragment extends ConsumerWidget {
               avgMemory,
               mostPopularServerName,
               mostPopularServerPlayers,
+              l10n
             ),
             const SizedBox(height: 16),
             
-            _buildActivitySection(theme, context, onlineServers, offlineServers),
+            _buildActivitySection(theme, context, onlineServers, offlineServers, l10n),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildProfileHeader(ThemeData theme) {
+  Widget _buildProfileHeader(ThemeData theme, AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -122,7 +125,7 @@ class ProfileFragment extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'Администратор',
+            l10n.administratorProfile,
             style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -154,7 +157,7 @@ class ProfileFragment extends ConsumerWidget {
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  'Системный администратор',
+                  l10n.systemadministratorProfile,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: const Color(0xFF00E676),
                     fontWeight: FontWeight.w600,
@@ -168,7 +171,7 @@ class ProfileFragment extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatsCards(ThemeData theme, int total, int online, int players) {
+  Widget _buildStatsCards(ThemeData theme, int total, int online, int players, AppLocalizations l10n) {
     return Row(
       children: [
         Expanded(
@@ -176,7 +179,7 @@ class ProfileFragment extends ConsumerWidget {
             theme,
             Icons.dns_rounded,
             total.toString(),
-            'Всего серверов',
+            l10n.totalServersProfile,
             const Color(0xFF2196F3),
           ),
         ),
@@ -186,7 +189,7 @@ class ProfileFragment extends ConsumerWidget {
             theme,
             Icons.power_settings_new,
             online.toString(),
-            'Онлайн',
+            l10n.onlineProfile,
             const Color(0xFF00E676),
           ),
         ),
@@ -196,7 +199,7 @@ class ProfileFragment extends ConsumerWidget {
             theme,
             Icons.people,
             players.toString(),
-            'Игроков',
+            l10n.playersProfile,
             const Color(0xFFFF9800),
           ),
         ),
@@ -254,6 +257,7 @@ class ProfileFragment extends ConsumerWidget {
     double avgMemory,
     String mostPopularName,
     int mostPopularPlayers,
+    AppLocalizations l10n
   ) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -281,7 +285,7 @@ class ProfileFragment extends ConsumerWidget {
               ),
               const SizedBox(width: 12),
               Text(
-                'Обзор серверов',
+                l10n.serverOverviewProfile,
                 style: theme.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -293,7 +297,7 @@ class ProfileFragment extends ConsumerWidget {
           _buildOverviewItem(
             theme,
             Icons.people_outline,
-            'Среднее количество игроков',
+            l10n.averageNumberOfPlayersProfile,
             '$avgPlayers игр.',
             const Color(0xFFFF9800),
           ),
@@ -302,7 +306,7 @@ class ProfileFragment extends ConsumerWidget {
           _buildOverviewItem(
             theme,
             Icons.memory,
-            'Средняя загрузка CPU',
+            l10n.averageCpuLoadProfile,
             '${avgCpu.toStringAsFixed(1)}%',
             avgCpu > 70 ? const Color(0xFFFF5252) : const Color(0xFF4CAF50),
           ),
@@ -311,7 +315,7 @@ class ProfileFragment extends ConsumerWidget {
           _buildOverviewItem(
             theme,
             Icons.storage,
-            'Средняя загрузка RAM',
+            l10n.averageRamLoadProfile,
             '${avgMemory.toStringAsFixed(1)}%',
             avgMemory > 70 ? const Color(0xFFFF5252) : const Color(0xFF4CAF50),
           ),
@@ -323,7 +327,7 @@ class ProfileFragment extends ConsumerWidget {
           _buildOverviewItem(
             theme,
             Icons.star,
-            'Самый популярный сервер',
+            l10n.mostPopularServerProfile,
             '$mostPopularName ($mostPopularPlayers игр.)',
             const Color(0xFFFFC107),
           ),
@@ -378,6 +382,7 @@ class ProfileFragment extends ConsumerWidget {
     BuildContext context,
     int online,
     int offline,
+    AppLocalizations l10n
   ) {
     return Container(
       decoration: BoxDecoration(
@@ -390,8 +395,8 @@ class ProfileFragment extends ConsumerWidget {
           _buildListTile(
             theme,
             Icons.terminal,
-            'SSH подключения',
-            'Управление ключами и сессиями',
+            l10n.sshConnectionsProfile,
+            l10n.keyAndSessionManagementProfile,
             () {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Управление SSH')),
@@ -402,11 +407,11 @@ class ProfileFragment extends ConsumerWidget {
           _buildListTile(
             theme,
             Icons.history,
-            'История действий',
-            'Журнал операций и изменений',
+            l10n.activityHistoryProfile,
+            l10n.operationAndChangeLogProfile,
             () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('История действий')),
+                SnackBar(content: Text(l10n.activityHistoryProfile)),
               );
             },
           ),
@@ -414,11 +419,11 @@ class ProfileFragment extends ConsumerWidget {
           _buildListTile(
             theme,
             Icons.assessment_outlined,
-            'Статус серверов',
-            'Онлайн: $online • Оффлайн: $offline',
+            l10n.serverStatusProfile,
+            '${l10n.onlineProfile}: $online • ${l10n.offlineServerList}: $offline',
             () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Детальная статистика')),
+                SnackBar(content: Text(l10n.detailedstatisticsProfile)),
               );
             },
           ),

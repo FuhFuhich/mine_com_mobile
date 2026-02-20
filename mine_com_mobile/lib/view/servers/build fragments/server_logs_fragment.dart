@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mine_com_mobile/l10n/app_localizations.dart';
 import '../../../model/minecraft_server_model.dart';
 import '../../../model/server_log_model.dart';
 import '../../../provider/server_logs_provider.dart';
@@ -61,6 +62,7 @@ class _ServerLogsFragmentState extends ConsumerState<ServerLogsFragment> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     // -----------------------------------------------------------------------------------------------------------------------
@@ -79,7 +81,7 @@ class _ServerLogsFragmentState extends ConsumerState<ServerLogsFragment> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('$serverName - Логи'),
+        title: Text('$serverName - ${l10n.logsServerLogs}'),
         actions: [
           IconButton(
             icon: Icon(_autoScroll ? Icons.arrow_downward : Icons.arrow_downward_outlined),
@@ -89,20 +91,22 @@ class _ServerLogsFragmentState extends ConsumerState<ServerLogsFragment> {
               });
               if (_autoScroll) _scrollToBottom();
             },
-            tooltip: _autoScroll ? 'Автопрокрутка включена' : 'Автопрокрутка выключена',
+            tooltip: _autoScroll 
+              ? l10n.autoscrollIsEnabledServerLogs 
+              : l10n.autoscrollIsDisabledServerLogs,
           ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
               ref.read(serverLogsProvider(serverName).notifier).refresh();
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Логи обновлены'),
-                  duration: Duration(seconds: 1),
+                SnackBar(
+                  content: Text(l10n.logsUpdatedServerLogs),
+                  duration: const Duration(seconds: 1),
                 ),
               );
             },
-            tooltip: 'Обновить',
+            tooltip: l10n.refreshLogsServerLogs,
           ),
           PopupMenuButton<String>(
             onSelected: (value) {
@@ -113,23 +117,23 @@ class _ServerLogsFragmentState extends ConsumerState<ServerLogsFragment> {
               }
             },
             itemBuilder: (context) => [
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'clear',
                 child: Row(
                   children: [
-                    Icon(Icons.clear_all, size: 20),
-                    SizedBox(width: 12),
-                    Text('Очистить логи'),
+                    const Icon(Icons.clear_all, size: 20),
+                    const SizedBox(width: 12),
+                    Text(l10n.clearLogsServerLogs),
                   ],
                 ),
               ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'export',
                 child: Row(
                   children: [
-                    Icon(Icons.download, size: 20),
-                    SizedBox(width: 12),
-                    Text('Экспортировать'),
+                    const Icon(Icons.download, size: 20),
+                    const SizedBox(width: 12),
+                    Text(l10n.exportLogsServerLogs),
                   ],
                 ),
               ),
@@ -139,18 +143,18 @@ class _ServerLogsFragmentState extends ConsumerState<ServerLogsFragment> {
       ),
       body: Column(
         children: [
-          _buildSearchBar(theme),
+          _buildSearchBar(theme, l10n),
           _buildFilterChips(theme),
-          _buildLogsInfo(theme, filteredLogsCount, totalLogsCount),
+          _buildLogsInfo(theme, filteredLogsCount, totalLogsCount, l10n),
           Expanded(
-            child: _buildLogsList(theme, filteredLogs),
+            child: _buildLogsList(theme, filteredLogs, l10n),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSearchBar(ThemeData theme) {
+  Widget _buildSearchBar(ThemeData theme, AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -162,7 +166,7 @@ class _ServerLogsFragmentState extends ConsumerState<ServerLogsFragment> {
       child: TextField(
         controller: _searchController,
         decoration: InputDecoration(
-          hintText: 'Поиск в логах...',
+          hintText: l10n.searchInLogsServerLogs,
           prefixIcon: const Icon(Icons.search),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
@@ -223,7 +227,7 @@ class _ServerLogsFragmentState extends ConsumerState<ServerLogsFragment> {
     );
   }
 
-  Widget _buildLogsInfo(ThemeData theme, int filtered, int total) {
+  Widget _buildLogsInfo(ThemeData theme, int filtered, int total, AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
@@ -237,7 +241,7 @@ class _ServerLogsFragmentState extends ConsumerState<ServerLogsFragment> {
           Icon(Icons.info_outline, size: 16, color: theme.colorScheme.primary),
           const SizedBox(width: 8),
           Text(
-            'Показано $filtered из $total записей',
+            '${l10n.shownServerLogs} $filtered ${l10n.fromServerLogs} $total ${l10n.recordsServerLogs}',
             style: theme.textTheme.bodySmall,
           ),
         ],
@@ -245,7 +249,7 @@ class _ServerLogsFragmentState extends ConsumerState<ServerLogsFragment> {
     );
   }
 
-  Widget _buildLogsList(ThemeData theme, List<ServerLogEntry> logs) {
+  Widget _buildLogsList(ThemeData theme, List<ServerLogEntry> logs, AppLocalizations l10n) {
     if (logs.isEmpty) {
       return Center(
         child: Column(
@@ -259,8 +263,8 @@ class _ServerLogsFragmentState extends ConsumerState<ServerLogsFragment> {
             const SizedBox(height: 16),
             Text(
               _searchQuery.isNotEmpty
-                  ? 'Ничего не найдено'
-                  : 'Нет логов для отображения',
+                  ? l10n.noResultsFoundServerLogs
+                  : l10n.noLogsToDisplayServerLogs,
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey.shade600,
@@ -411,6 +415,8 @@ class _ServerLogsFragmentState extends ConsumerState<ServerLogsFragment> {
     String message,
     DateTime timestamp,
   ) {
+    final l10n = AppLocalizations.of(context)!;
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -426,12 +432,12 @@ class _ServerLogsFragmentState extends ConsumerState<ServerLogsFragment> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildDetailRow('Время', timestamp.toString()),
-              if (source != null) _buildDetailRow('Источник', source),
+              _buildDetailRow(l10n.timeServerLogs, timestamp.toString()),
+              if (source != null) _buildDetailRow(l10n.sourceServerLogs, source),
               const SizedBox(height: 12),
-              const Text(
-                'Сообщение:',
-                style: TextStyle(fontWeight: FontWeight.bold),
+              Text(
+                l10n.messageServerLogs,
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               SelectableText(
@@ -447,15 +453,15 @@ class _ServerLogsFragmentState extends ConsumerState<ServerLogsFragment> {
               Clipboard.setData(ClipboardData(text: message));
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Скопировано в буфер обмена')),
+                SnackBar(content: Text(l10n.copiedToClipboardServerLogs)),
               );
             },
             icon: const Icon(Icons.copy),
-            label: const Text('Копировать'),
+            label: Text(l10n.copyToClipboardServerLogs),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Закрыть'),
+            child: Text(l10n.closeServerLogs),
           ),
         ],
       ),
@@ -484,21 +490,17 @@ class _ServerLogsFragmentState extends ConsumerState<ServerLogsFragment> {
   }
 
   void _showExportDialog(BuildContext context, List<ServerLogEntry> logs) {
+    final l10n = AppLocalizations.of(context)!;
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Экспорт логов'),
-        content: const Text(
-          'Функция экспорта будет реализована позже.\n\n'
-          'Будет доступен экспорт в форматы:\n'
-          '• TXT\n'
-          '• JSON\n'
-          '• CSV',
-        ),
+        title: Text(l10n.exportLogsTitleServerLogs),
+        content: Text(l10n.exportComingSoonServerLogs),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Понятно'),
+            child: Text(l10n.understoodServerLogs),
           ),
         ],
       ),

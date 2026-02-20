@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../profile/profile_fragment.dart';
 import '../servers/server_list_fragment.dart';
 import '../settings/settings_fragment.dart';
+import 'package:mine_com_mobile/l10n/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,6 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     
     return Scaffold(
       body: _pages[_currentIndex],
@@ -34,21 +36,21 @@ class _HomeScreenState extends State<HomeScreen> {
         selectedFontSize: 12,
         unselectedFontSize: 11,
         elevation: 8,
-        items: const [
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: 'Профиль',
+            icon: const Icon(Icons.person_outline),
+            activeIcon: const Icon(Icons.person),
+            label: l10n.profileMainMenu,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.dns_outlined),
-            activeIcon: Icon(Icons.dns),
-            label: 'Серверы',
+            icon: const Icon(Icons.dns_outlined),
+            activeIcon: const Icon(Icons.dns),
+            label: l10n.serversMainMenu,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.settings_outlined),
-            activeIcon: Icon(Icons.settings),
-            label: 'Настройки',
+            icon: const Icon(Icons.settings_outlined),
+            activeIcon: const Icon(Icons.settings),
+            label: l10n.settingsMainMenu,
           ),
         ],
       ),

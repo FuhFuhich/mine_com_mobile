@@ -3,14 +3,42 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../model/minecraft_server_model.dart';
 import '../../provider/minecraft_server_provider.dart';
 import 'server_detail_screen.dart';
+import 'package:mine_com_mobile/l10n/app_localizations.dart';
 
-class ServerListWrapper extends ConsumerWidget {
+class ServerListWrapper extends ConsumerStatefulWidget {
   const ServerListWrapper({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final servers = ref.watch(serverListProvider);
-    final serverNotifier = ref.read(serverListProvider.notifier);
+  ConsumerState<ServerListWrapper> createState() => _ServerListWrapperState();
+}
+
+class _ServerListWrapperState extends ConsumerState<ServerListWrapper> {
+  bool _isSearchActive = false;
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _toggleSearch() {
+    setState(() {
+      if (_isSearchActive) {
+        _isSearchActive = false;
+        _searchController.clear();
+        ref.read(searchQueryProvider.notifier).state = '';
+      } else {
+        _isSearchActive = true;
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final servers = ref.watch(filteredServerListProvider);
+    final searchQuery = ref.watch(searchQueryProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     void handleServerAction(String action, int index) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -27,20 +55,45 @@ class ServerListWrapper extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Серверы'),
+        title: _isSearchActive
+            ? TextField(
+                controller: _searchController,
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: l10n.searchingForServersServerList,
+                  border: InputBorder.none,
+                ),
+                onChanged: (value) {
+                  ref.read(searchQueryProvider.notifier).state = value;
+                },
+              )
+            : Text(l10n.serversMainMenu),
         actions: [
+          if (_isSearchActive && searchQuery.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () {
+                _searchController.clear();
+                ref.read(searchQueryProvider.notifier).state = '';
+              },
+              tooltip: l10n.clearServerList,
+            ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
-              // TODO: Обновить список серверов
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Обновление списка серверов'),
-                  duration: Duration(milliseconds: 800),
+                SnackBar(
+                  content: Text(l10n.refreshServerListServerList),
+                  duration: const Duration(milliseconds: 800),
                 ),
               );
             },
-            tooltip: 'Обновить',
+            tooltip: l10n.refreshServerList,
+          ),
+          IconButton(
+            icon: Icon(_isSearchActive ? Icons.search_off : Icons.search),
+            onPressed: _toggleSearch,
+            tooltip: _isSearchActive ? l10n.closeSearchServerList : l10n.searchServerList,
           ),
         ],
       ),
@@ -56,14 +109,16 @@ class ServerListWrapper extends ConsumerWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Нет серверов',
+                    searchQuery.isNotEmpty ? l10n.noServersFoundServerList : l10n.noServersServerList,
                     style: tt.titleMedium?.copyWith(
                       color: tt.bodySmall?.color,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Добавьте новый сервер',
+                    searchQuery.isNotEmpty
+                        ? l10n.tryChangingYourQueryServerList
+                        : l10n.addNewServerServerList,
                     style: tt.bodySmall,
                   ),
                 ],
@@ -75,16 +130,15 @@ class ServerListWrapper extends ConsumerWidget {
               separatorBuilder: (_, __) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 final server = servers[index];
-                
-                // Данные "из базы данных" (в будущем будут парситься реально)
+
                 final serverName = server.name;
                 final serverStatus = server.status;
                 final serverPlayers = server.players;
                 final serverVersion = server.version;
                 final cpuUsage = server.cpuUsage;
                 final memoryUsage = server.memoryUsage;
-                
-                final isOnline = serverStatus == 'Онлайн';
+
+                final isOnline = serverStatus == 'Online';
                 final statusColor = isOnline ? cs.primary : cs.error;
 
                 return GestureDetector(
@@ -122,7 +176,6 @@ class ServerListWrapper extends ConsumerWidget {
                             children: [
                               Row(
                                 children: [
-                                  // Иконка статуса
                                   Container(
                                     padding: const EdgeInsets.all(10),
                                     decoration: BoxDecoration(
@@ -136,8 +189,6 @@ class ServerListWrapper extends ConsumerWidget {
                                     ),
                                   ),
                                   const SizedBox(width: 14),
-                                  
-                                  // Информация о сервере
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -155,7 +206,6 @@ class ServerListWrapper extends ConsumerWidget {
                                               ),
                                             ),
                                             const SizedBox(width: 8),
-                                            // Чип статуса
                                             Container(
                                               padding: const EdgeInsets.symmetric(
                                                 horizontal: 8,
@@ -178,7 +228,7 @@ class ServerListWrapper extends ConsumerWidget {
                                                   ),
                                                   const SizedBox(width: 6),
                                                   Text(
-                                                    serverStatus,
+                                                    serverStatus == "Online" ? l10n.onlineServerList : l10n.offlineServerList,
                                                     style: tt.bodySmall?.copyWith(
                                                       color: statusColor,
                                                       fontWeight: FontWeight.w600,
@@ -200,7 +250,7 @@ class ServerListWrapper extends ConsumerWidget {
                                             ),
                                             const SizedBox(width: 4),
                                             Text(
-                                              '$serverPlayers игроков',
+                                              '$serverPlayers ${l10n.playersServerList}',
                                               style: tt.bodySmall,
                                             ),
                                             const SizedBox(width: 12),
@@ -221,8 +271,6 @@ class ServerListWrapper extends ConsumerWidget {
                                   ),
                                 ],
                               ),
-                              
-                              // Метрики (если сервер онлайн)
                               if (isOnline) ...[
                                 const SizedBox(height: 12),
                                 Row(
@@ -250,11 +298,7 @@ class ServerListWrapper extends ConsumerWidget {
                             ],
                           ),
                         ),
-                        
-                        // Разделитель
                         Divider(height: 1, color: theme.dividerColor),
-                        
-                        // Кнопки управления
                         Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 12,
@@ -266,39 +310,26 @@ class ServerListWrapper extends ConsumerWidget {
                               _buildActionButton(
                                 context,
                                 icon: Icons.play_arrow,
-                                label: 'Запуск',
+                                label: l10n.launchServerList,
                                 color: Colors.green,
                                 onPressed: () =>
-                                    handleServerAction('Запуск', index),
+                                    handleServerAction(l10n.launchServerList, index),
                               ),
                               _buildActionButton(
                                 context,
                                 icon: Icons.stop,
-                                label: 'Стоп',
+                                label: l10n.stopServerList,
                                 color: Colors.red,
                                 onPressed: () =>
-                                    handleServerAction('Остановка', index),
+                                    handleServerAction(l10n.stopServerList, index),
                               ),
                               _buildActionButton(
                                 context,
                                 icon: Icons.refresh,
-                                label: 'Рестарт',
+                                label: l10n.restartServerList,
                                 color: Colors.orange,
                                 onPressed: () =>
-                                    handleServerAction('Перезагрузка', index),
-                              ),
-                              _buildActionButton(
-                                context,
-                                icon: Icons.info_outline,
-                                label: 'Инфо',
-                                color: cs.primary,
-                                onPressed: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (_) => ServerDetailScreen(server: server),
-                                    ),
-                                  );
-                                },
+                                    handleServerAction(l10n.restartServerList, index),
                               ),
                             ],
                           ),

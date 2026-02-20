@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:mine_com_mobile/l10n/app_localizations.dart';
 import '../../../model/minecraft_server_model.dart';
 
 class MetricsFragment extends StatefulWidget {
@@ -16,6 +17,7 @@ class _MetricsFragmentState extends State<MetricsFragment> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     
     // -----------------------------------------------------------------------------------------------------------------------
     // Данные из бд
@@ -43,7 +45,7 @@ class _MetricsFragmentState extends State<MetricsFragment> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('$serverName - Метрики'),
+        title: Text('$serverName - ${l10n.metricsMetricsFragment}'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -52,17 +54,17 @@ class _MetricsFragmentState extends State<MetricsFragment> {
           children: [
             Row(
               children: [
-                _buildTab(context, 'CPU', 0),
-                _buildTab(context, 'Память', 1),
-                _buildTab(context, 'Обзор', 2),
+                _buildTab(context, l10n.cpuMetricsFragment, 0),
+                _buildTab(context, l10n.memoryMetricsFragment, 1),
+                _buildTab(context, l10n.overviewMetricsFragment, 2),
               ],
             ),
             const SizedBox(height: 20),
-            if (_selectedTab == 0) _buildCpuChart(context, cpuData),
-            if (_selectedTab == 1) _buildRamChart(context, ramData),
-            if (_selectedTab == 2) _buildOverview(context, currentCpu, currentRam),
+            if (_selectedTab == 0) _buildCpuChart(context, cpuData, l10n),
+            if (_selectedTab == 1) _buildRamChart(context, ramData, l10n),
+            if (_selectedTab == 2) _buildOverview(context, currentCpu, currentRam, l10n),
             const SizedBox(height: 20),
-            _buildStatsCard(context, avgCpu, avgRam, maxCpu, maxRam),
+            _buildStatsCard(context, avgCpu, avgRam, maxCpu, maxRam, l10n),
           ],
         ),
       ),
@@ -103,7 +105,7 @@ class _MetricsFragmentState extends State<MetricsFragment> {
     );
   }
 
-  Widget _buildCpuChart(BuildContext context, List<double> cpuData) {
+  Widget _buildCpuChart(BuildContext context, List<double> cpuData, AppLocalizations l10n) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final tt = theme.textTheme;
@@ -116,7 +118,7 @@ class _MetricsFragmentState extends State<MetricsFragment> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Нагрузка CPU (последние 10 измерений)',
+          l10n.cpuLoadLast10MeasurementsMetricsFragment,
           style: tt.titleSmall,
         ),
         const SizedBox(height: 16),
@@ -222,7 +224,7 @@ class _MetricsFragmentState extends State<MetricsFragment> {
     );
   }
 
-  Widget _buildRamChart(BuildContext context, List<double> ramData) {
+  Widget _buildRamChart(BuildContext context, List<double> ramData, AppLocalizations l10n) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final tt = theme.textTheme;
@@ -235,7 +237,7 @@ class _MetricsFragmentState extends State<MetricsFragment> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Использование ОП (последние 10 измерений)',
+          l10n.ramUsageLast10MeasurementsMetricsFragment,
           style: tt.titleSmall,
         ),
         const SizedBox(height: 16),
@@ -341,7 +343,7 @@ class _MetricsFragmentState extends State<MetricsFragment> {
     );
   }
 
-  Widget _buildOverview(BuildContext context, double currentCpu, double currentRam) {
+  Widget _buildOverview(BuildContext context, double currentCpu, double currentRam, AppLocalizations l10n) {
     final tt = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
 
@@ -349,7 +351,7 @@ class _MetricsFragmentState extends State<MetricsFragment> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Общий обзор метрик',
+          l10n.metricsOverviewMetricsFragment,
           style: tt.titleSmall,
         ),
         const SizedBox(height: 16),
@@ -358,7 +360,7 @@ class _MetricsFragmentState extends State<MetricsFragment> {
             Expanded(
               child: _buildCircularMetric(
                 context: context,
-                label: 'CPU',
+                label: l10n.cpuMetricsFragment,
                 value: currentCpu,
                 color: cs.primary,
               ),
@@ -367,7 +369,7 @@ class _MetricsFragmentState extends State<MetricsFragment> {
             Expanded(
               child: _buildCircularMetric(
                 context: context,
-                label: 'ОП',
+                label: l10n.ramMetricsFragment,
                 value: currentRam,
                 color: cs.primary,
               ),
@@ -450,6 +452,7 @@ class _MetricsFragmentState extends State<MetricsFragment> {
     double avgRam,
     double maxCpu,
     double maxRam,
+    AppLocalizations l10n,
   ) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
@@ -468,29 +471,29 @@ class _MetricsFragmentState extends State<MetricsFragment> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Статистика', style: tt.titleSmall),
+          Text(l10n.statisticsMetricsFragment, style: tt.titleSmall),
           const SizedBox(height: 12),
           _buildStatRow(
             context,
-            'Среднее CPU',
+            l10n.averageCpuMetricsFragment,
             '${avgCpu.toStringAsFixed(1)}%',
           ),
           const SizedBox(height: 8),
           _buildStatRow(
             context,
-            'Среднее ОП',
+            l10n.averageRamMetricsFragment,
             '${avgRam.toStringAsFixed(1)}%',
           ),
           const SizedBox(height: 8),
           _buildStatRow(
             context,
-            'Макс CPU',
+            l10n.maxCpuMetricsFragment,
             '${maxCpu.toStringAsFixed(1)}%',
           ),
           const SizedBox(height: 8),
           _buildStatRow(
             context,
-            'Макс ОП',
+            l10n.maxRamMetricsFragment,
             '${maxRam.toStringAsFixed(1)}%',
           ),
         ],

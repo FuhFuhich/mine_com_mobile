@@ -4,6 +4,7 @@ import '../../model/linux_server_model.dart';
 import 'build fragments/metrics_fragment.dart';
 import 'build fragments/linux_console_fragment.dart';
 import 'build fragments/server_logs_fragment.dart';
+import 'package:mine_com_mobile/l10n/app_localizations.dart';
 
 class ServerDetailScreen extends StatefulWidget {
   final MinecraftServerModel server;
@@ -35,6 +36,7 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     
     // -----------------------------------------------------------------------------------------------------------------------
     // Данные из бд
@@ -72,7 +74,7 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _buildStatusCard(context, serverStatus),
+            _buildStatusCard(context, serverStatus, l10n),
             const SizedBox(height: 20),
 
             _buildInfoSection(
@@ -82,10 +84,11 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
               activePlayers,
               allocatedCores,
               allocatedRam,
+              l10n
             ),
             const SizedBox(height: 20),
 
-            _buildMetricsPreview(context, cpuUsage, memoryUsage),
+            _buildMetricsPreview(context, cpuUsage, memoryUsage, l10n),
             const SizedBox(height: 20),
 
             Row(
@@ -94,27 +97,27 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
                 _buildControlButton(
                   context,
                   icon: Icons.play_arrow,
-                  label: 'Запуск',
+                  label: l10n.startServerDetailServerDetail,
                   onPressed: () => _handleAction('Запуск'),
                 ),
                 _buildControlButton(
                   context,
                   icon: Icons.stop,
-                  label: 'Стоп',
+                  label: l10n.stopServerDetail,
                   onPressed: () => _handleAction('Остановка'),
                   isDanger: true,
                 ),
                 _buildControlButton(
                   context,
                   icon: Icons.refresh,
-                  label: 'Перезагрузка',
+                  label: l10n.restartServerDetail,
                   onPressed: () => _handleAction('Перезагрузка'),
                 ),
               ],
             ),
             const SizedBox(height: 20),
 
-            _buildMetricsButton(context),
+            _buildMetricsButton(context, l10n),
             const SizedBox(height: 12),
             _buildConsoleButton(
               context,
@@ -123,23 +126,24 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
               sshPort,
               sshUsername,
               sshPassword,
+              l10n
             ),
             const SizedBox(height: 12),
-            _buildLogsButton(context),
+            _buildLogsButton(context, l10n),
             const SizedBox(height: 12),
-            _buildBackupButton(context),
+            _buildBackupButton(context, l10n),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildStatusCard(BuildContext context, String status) {
+  Widget _buildStatusCard(BuildContext context, String status, AppLocalizations l10n) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final tt = theme.textTheme;
     
-    final isOnline = status == 'Онлайн';
+    final isOnline = status == l10n.onlineServerDetail;
     final statusColor = isOnline ? cs.primary : cs.error;
 
     return Container(
@@ -161,7 +165,7 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Статус сервера',
+                l10n.serverStatusServerDetail,
                 style: tt.bodySmall?.copyWith(fontSize: 12),
               ),
               const SizedBox(height: 4),
@@ -186,16 +190,17 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
     int players,
     int cores,
     int ram,
+    AppLocalizations l10n
   ) {
     final theme = Theme.of(context);
     final tt = theme.textTheme;
 
     final items = [
-      ('Версия Minecraft', version),
-      ('Mod Loader', modLoader),
-      ('Активные игроки', '$players'),
-      ('Выделенные ядра', '$cores ядер'),
-      ('Выделённая ОП', '$ram GB'),
+      (l10n.minecraftVersionServerDetail, version),
+      (l10n.modLoaderServerDetail, modLoader),
+      (l10n.activePlayersServerDetail, '$players'),
+      (l10n.dedicatedCoresServerDetail, '$cores ядер'),
+      (l10n.dedicatedRamServerDetail, '$ram GB'),
     ];
 
     return Container(
@@ -209,7 +214,7 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Информация о сервере',
+            l10n.serverInformationServerDetail,
             style: tt.titleLarge,
           ),
           const SizedBox(height: 12),
@@ -237,7 +242,7 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
     );
   }
 
-  Widget _buildMetricsPreview(BuildContext context, double cpu, double memory) {
+  Widget _buildMetricsPreview(BuildContext context, double cpu, double memory, AppLocalizations l10n) {
     final theme = Theme.of(context);
 
     return Container(
@@ -251,13 +256,13 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Текущие метрики',
+            l10n.currentMetricsServerDetail,
             style: theme.textTheme.titleLarge,
           ),
           const SizedBox(height: 16),
-          _buildMetricRow(context, 'CPU', cpu),
+          _buildMetricRow(context, l10n.cpuServerDetail, cpu),
           const SizedBox(height: 12),
-          _buildMetricRow(context, 'Оперативная память', memory),
+          _buildMetricRow(context, l10n.ramServerDetail, memory),
         ],
       ),
     );
@@ -340,7 +345,7 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
     );
   }
 
-  Widget _buildMetricsButton(BuildContext context) {
+  Widget _buildMetricsButton(BuildContext context, AppLocalizations l10n) {
     return ElevatedButton.icon(
       onPressed: () {
         Navigator.of(context).push(
@@ -350,7 +355,7 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
         );
       },
       icon: const Icon(Icons.show_chart),
-      label: const Text('Подробные метрики'),
+      label: Text(l10n.detailedMetricsServerDetail),
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 14),
         shape: RoundedRectangleBorder(
@@ -367,6 +372,7 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
     int port,
     String username,
     String password,
+    AppLocalizations l10n
   ) {
     return ElevatedButton.icon(
       onPressed: () {
@@ -386,7 +392,7 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
         );
       },
       icon: const Icon(Icons.terminal),
-      label: const Text('Консоль Linux'),
+      label: Text(l10n.linuxConsoleServerDetail),
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 14),
         shape: RoundedRectangleBorder(
@@ -396,7 +402,7 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
     );
   }
 
-  Widget _buildLogsButton(BuildContext context) {
+  Widget _buildLogsButton(BuildContext context, AppLocalizations l10n) {
     return ElevatedButton.icon(
       onPressed: () {
         Navigator.of(context).push(
@@ -406,7 +412,7 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
         );
       },
       icon: const Icon(Icons.history),
-      label: const Text('Логи сервера'),
+      label: Text(l10n.serverLogsServerDetail),
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 14),
         shape: RoundedRectangleBorder(
@@ -416,7 +422,7 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
     );
   }
 
-  Widget _buildBackupButton(BuildContext context) {
+  Widget _buildBackupButton(BuildContext context, AppLocalizations l10n) {
     return ElevatedButton.icon(
       onPressed: () {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -427,7 +433,7 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
         );
       },
       icon: const Icon(Icons.backup),
-      label: const Text('Создание бэкапа сервера'),
+      label: Text(l10n.creatingServerBackupServerDetail),
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 14),
         shape: RoundedRectangleBorder(

@@ -55,7 +55,7 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
     
     // Вычисляем uptime
     final uptimeDuration = DateTime.now().difference(dateUp);
-    final uptimeString = '${uptimeDuration.inHours}ч ${uptimeDuration.inMinutes.remainder(60)}м';
+    final uptimeString = '${uptimeDuration.inHours}${l10n.hServerDetail} ${uptimeDuration.inMinutes.remainder(60)}${l10n.mServerDetail}';
     final startTimeString = '${dateUp.hour.toString().padLeft(2, '0')}:${dateUp.minute.toString().padLeft(2, '0')}';
  
     // SSH данные для консоли
@@ -188,7 +188,7 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
                   children: [
                     Icon(Icons.timer, size: 16, color: theme.textTheme.bodyMedium?.color),
                     const SizedBox(width: 4),
-                    Text('Работает: $uptime', style: tt.bodyMedium),
+                    Text('${l10n.worksServerDetail} $uptime', style: tt.bodyMedium),
                   ],
                 ),
                 const SizedBox(height: 2),
@@ -196,7 +196,7 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
                   children: [
                     Icon(Icons.access_time, size: 16, color: theme.textTheme.bodyMedium?.color),
                     const SizedBox(width: 4),
-                    Text('Запущен: $startTime', style: tt.bodyMedium),
+                    Text('${l10n.launchedServerDetail} $startTime', style: tt.bodyMedium),
                   ],
                 ),
               ],

@@ -291,6 +291,18 @@ class AppLocalizationsRu extends AppLocalizations {
   String get creatingServerBackupServerDetail => 'Создание бэкапа сервера';
 
   @override
+  String get hServerDetail => 'ч';
+
+  @override
+  String get mServerDetail => 'м';
+
+  @override
+  String get worksServerDetail => 'Работает:';
+
+  @override
+  String get launchedServerDetail => 'Запущен:';
+
+  @override
   String get connectedToLinuxConsole => 'Подключение к';
 
   @override

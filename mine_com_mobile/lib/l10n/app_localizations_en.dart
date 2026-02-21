@@ -291,6 +291,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get creatingServerBackupServerDetail => 'Creating a server backup';
 
   @override
+  String get hServerDetail => 'h';
+
+  @override
+  String get mServerDetail => 'm';
+
+  @override
+  String get worksServerDetail => 'Works:';
+
+  @override
+  String get launchedServerDetail => 'Launched:';
+
+  @override
   String get connectedToLinuxConsole => 'Connected to';
 
   @override

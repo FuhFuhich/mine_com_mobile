@@ -656,6 +656,30 @@ abstract class AppLocalizations {
   /// **'Creating a server backup'**
   String get creatingServerBackupServerDetail;
 
+  /// No description provided for @hServerDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'h'**
+  String get hServerDetail;
+
+  /// No description provided for @mServerDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'m'**
+  String get mServerDetail;
+
+  /// No description provided for @worksServerDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Works:'**
+  String get worksServerDetail;
+
+  /// No description provided for @launchedServerDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Launched:'**
+  String get launchedServerDetail;
+
   /// No description provided for @connectedToLinuxConsole.
   ///
   /// In en, this message translates to:

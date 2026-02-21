@@ -103,6 +103,10 @@
   "linuxConsoleServerDetail": "Консоль Linux",
   "serverLogsServerDetail": "Логи сервера",
   "creatingServerBackupServerDetail": "Создание бэкапа сервера",
+  "hServerDetail": "ч",
+  "mServerDetail": "м",
+  "worksServerDetail": "Работает:",
+  "launchedServerDetail": "Запущен:",
 
   "connectedToLinuxConsole": "Подключено к:",
   "connectionErrorLinuxConsole": "Ошибка подключения:",

@@ -104,6 +104,10 @@
   "linuxConsoleServerDetail": "Linux console",
   "serverLogsServerDetail": "Server logs",
   "creatingServerBackupServerDetail": "Creating a server backup",
+  "hServerDetail": "h",
+  "mServerDetail": "m",
+  "worksServerDetail": "Works:",
+  "launchedServerDetail": "Launched:",
 
   "connectedToLinuxConsole": "Connected to",
   "connectionErrorLinuxConsole": "Connection Error:",

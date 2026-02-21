@@ -51,7 +51,13 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
     final allocatedRam = 8;
     final cpuUsage = 45.5;
     final memoryUsage = 65.3;
+    final dateUp = DateTime.now().subtract(const Duration(hours: 3, minutes: 45));
     
+    // Вычисляем uptime
+    final uptimeDuration = DateTime.now().difference(dateUp);
+    final uptimeString = '${uptimeDuration.inHours}ч ${uptimeDuration.inMinutes.remainder(60)}м';
+    final startTimeString = '${dateUp.hour.toString().padLeft(2, '0')}:${dateUp.minute.toString().padLeft(2, '0')}';
+ 
     // SSH данные для консоли
     final sshHost = '95.165.27.159';
     final sshPort = 22;
@@ -74,7 +80,7 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _buildStatusCard(context, serverStatus, l10n),
+            _buildStatusCard(context, serverStatus, uptimeString, startTimeString, l10n),
             const SizedBox(height: 20),
 
             _buildInfoSection(
@@ -138,7 +144,7 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
     );
   }
 
-  Widget _buildStatusCard(BuildContext context, String status, AppLocalizations l10n) {
+  Widget _buildStatusCard(BuildContext context, String status, String uptime, String startTime, AppLocalizations l10n) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final tt = theme.textTheme;
@@ -161,22 +167,40 @@ class _ServerDetailScreenState extends State<ServerDetailScreen> {
             size: 40,
           ),
           const SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n.serverStatusServerDetail,
-                style: tt.bodySmall?.copyWith(fontSize: 12),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                status,
-                style: tt.titleLarge?.copyWith(
-                  color: statusColor,
-                  fontWeight: FontWeight.bold,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.serverStatusServerDetail,
+                  style: tt.bodySmall?.copyWith(fontSize: 12),
                 ),
-              ),
-            ],
+                const SizedBox(height: 4),
+                Text(
+                  status,
+                  style: tt.titleLarge?.copyWith(
+                    color: statusColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(Icons.timer, size: 16, color: theme.textTheme.bodyMedium?.color),
+                    const SizedBox(width: 4),
+                    Text('Работает: $uptime', style: tt.bodyMedium),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    Icon(Icons.access_time, size: 16, color: theme.textTheme.bodyMedium?.color),
+                    const SizedBox(width: 4),
+                    Text('Запущен: $startTime', style: tt.bodyMedium),
+                  ],
+                ),
+              ],
+            ),
           ),
         ],
       ),

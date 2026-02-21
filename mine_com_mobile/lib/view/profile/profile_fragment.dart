@@ -33,17 +33,6 @@ class ProfileFragment extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.profileMainMenu),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit_outlined),
-            tooltip: l10n.editprofile1Profile,
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(l10n.editProfileProfile)),
-              );
-            },
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
